@@ -1,0 +1,111 @@
+#!/usr/bin/make -f
+
+SHELL := sh -e
+DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
+DEB_BUILD_ARCH := $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+SOURCE := $(shell dpkg-parsechangelog | sed -ne 's,^Source: *\(.*\)$$,\1,p')
+VERSION_DEBIAN := $(shell dpkg-parsechangelog | sed -ne 's,^Version: *\(.*\)$$,\1,p')
+VERSION := $(shell echo "$(VERSION_DEBIAN)" | sed -e 's,^[^:]*:,,' -e 's,-[^-]*$$,,')
+ 
+BUILD_DIR = debian/build
+STAMPS_DIR = debian/stamps
+
+ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+	CONFIG_DEBUG = y
+endif
+ifneq (,$(findstring thumb,$(DEB_BUILD_OPTIONS)))
+THUMB := -mthumb
+endif
+
+source: $(STAMPS_DIR)/source
+
+$(STAMPS_DIR)/source: SOURCE_FILES = $(filter-out debian, $(wildcard * .[^.]*))
+$(STAMPS_DIR)/source: DIR = $(BUILD_DIR)/source
+$(STAMPS_DIR)/source:
+	dh_testdir
+	rm -rf '$(DIR)'
+	mkdir -p $(STAMPS_DIR) '$(DIR)'
+	cp -al $(SOURCE_FILES) '$(DIR)'
+	cd $(DIR); QUILT_PATCHES=$(CURDIR)/debian/patches quilt --quiltrc /dev/null push -a || test $$? = 2
+	touch $@
+
+setup: $(STAMPS_DIR)/setup_maemo
+
+$(STAMPS_DIR)/setup_%: SOURCE_DIR=$(BUILD_DIR)/source
+$(STAMPS_DIR)/setup_%: DIR=$(BUILD_DIR)/build_$*
+$(STAMPS_DIR)/setup_%: $(STAMPS_DIR)/source
+	dh_testdir
+	rm -rf '$(DIR)'
+	cp -al '$(SOURCE_DIR)' '$(DIR)'
+	cp debian/config/config.$* '$(DIR)'/.config
+	make -C '$(DIR)' oldconfig
+	touch $@
+
+build: $(STAMPS_DIR)/build_maemo
+
+$(STAMPS_DIR)/build_%: DIR=$(BUILD_DIR)/build_$*
+$(STAMPS_DIR)/build_%: $(STAMPS_DIR)/setup_%
+	dh_testdir
+	make -C '$(DIR)' THUMB=$(THUMB) busybox docs/busybox.1 BB_EXTRA_VERSION="$(shell lsb_release -is) $(VERSION_DEBIAN)"
+	make -C '$(DIR)' busybox.links
+	touch $@
+
+$(BUILD_DIR) $(STAMPS_DIR):
+	@[ -d $@ ] || mkdir $@
+
+maintainerclean:
+	rm -rf $(filter-out .svn debian, $(wildcard * .[^.]*))
+
+clean:
+	dh_testdir
+	rm -rf $(BUILD_DIR) $(STAMPS_DIR)
+	dh_clean
+
+binary-indep:
+
+binary-arch: DIR = $(BUILD_DIR)/build_maemo
+binary-arch: DH_OPTIONS = -pbusybox-power
+binary-arch: $(STAMPS_DIR)/build_maemo
+	dh_testdir
+	dh_testroot
+	dh_clean -k -d
+	install -D -m644 debian/scripts/functions debian/busybox-power/opt/busybox-power/functions
+	install -D -m755 debian/scripts/install-binary.sh debian/busybox-power/opt/busybox-power/install-binary.sh
+	install -D -m755 debian/scripts/uninstall-binary.sh debian/busybox-power/opt/busybox-power/uninstall-binary.sh
+	install -D -m755 $(DIR)/busybox_unstripped debian/busybox-power/opt/busybox-power/busybox.power
+
+	$(MAKE) -f debian/rules binary-arch_all
+
+binary-arch_all:
+	dh_installdirs
+	dh_installdocs -pbusybox-power
+	dh_installchangelogs -pbusybox-power
+	dh_strip -pbusybox-power
+	dh_compress -pbusybox-power
+
+	dh_link
+	dh_fixperms
+	dh_installdeb
+
+	dh_shlibdeps -pbusybox-power
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+
+DIR_ORIG = ../orig/$(SOURCE)-$(VERSION)
+TAR_ORIG_NAME = $(SOURCE)_$(VERSION).orig.tar.gz
+TAR_ORIG = $(firstword $(wildcard ../$(TAR_ORIG_NAME)) $(wildcard ../orig/$(TAR_ORIG_NAME)))
+
+orig: $(DIR_ORIG)
+	rsync --delete --exclude debian --exclude .svk --exclude .svn --link-dest=$(DIR_ORIG)/ -a $(DIR_ORIG)/ .
+
+$(DIR_ORIG):
+ifeq ($(TAR_ORIG),)
+	$(error Cannot find orig tarball $(TAR_ORIG_NAME))
+else
+	mkdir -p ../orig
+	tar -C ../orig -xzf $(TAR_ORIG)
+endif
+

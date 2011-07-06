@@ -1,0 +1,18 @@
+#
+# This file contains (ideally) all functions supported by busybox sorted by
+# their respective location in a standard Debian installation.
+#
+# Please send in enhancements/corrections to my e-mail adress.
+#
+# By Dennis Groenen <dennis_groenen@hotmail.com>
+# Version 0.1 05-06-2011 (MM-DD-YYYY)
+#
+
+# Define possible destinations for the binaries
+DESTINATIONS="DEST_BIN DEST_SBIN DEST_USRBIN DEST_USRSBIN"
+
+# Define all applications per destination
+DEST_BIN="bunzip2 bzcat bzip2 cpio cttyhack dnsdomainname dumpkmap ed fbset fdflush hush ip ipaddr iplink iproute iprule mountpoint mt nc pipe_progress popmaildir pscan usleep ash cat chgrp chmod chown cp date dd df dmesg echo false hostname ln login ls mkdir mknod mktemp more mount mv pidof pwd readlink rm rmdir sed sleep stty su sync tar touch true umount uname which grep egrep fgrep run-parts zcat gunzip gzip uncompress sh fsync ping ping6 kill ps fuser netstat"
+DEST_SBIN="blkid blockdev bootchartd crond fdisk findfs ifenslave ip iptunnel klogd loadkmap logread makedevs mdev mkdosfs mke2fs mkfs.ext2 mkfs.vfat nbd-client raidautorun runlevel setconsole start-stop-daemon sulogin sysctl syslogd vconfig getty hwclock killall5 losetup mkswap swapoff swapon pivot_root halt reboot poweroff ifconfig nameif route slattach ifdown ifup zcip"
+DEST_USRBIN="adjtimex arping base64 beep brctl cal catv chattr chpst chrt chvt crontab cryptpw dc deallocvt devmem diff dos2unix dumpleases eject envdir envuidgid ether-wake fdformat fgconsole flock freeramdisk ftpget ftpput hexdump ionice iostat ipcalc kbd_mode last length less linux32 linux64 loadfont lpd lpq lpr lsattr lsusb lzcat lzma lzop lzopcat makemime man microcom mkpasswd mpstat nmeter openvt passwd patch pmap readahead reformime resize rev rpm rpm2cpio rtcwake runsv runsvdir rx script scriptreplay setarch setfont setkeycodes setlogcons setuidgid showkey smemcap softlimit strings sv svlogd tcpsvd telnet tftp timeout traceroute traceroute6 ttysize udhcpc udpsvd unix2dos unlzma unlzop unxz unzip uudecode uuencode vi vlock volname wall wget xz xzcat zcipice [ [[ awk basename cksum clear cmp comm cut dirname du env expand expr find fold getopt head hostid id install ipcrm ipcs logger logname md5sum mesg mkfifo nice nohup od printenv printf renice reset seq setsid sha1sum sort split stat sum tac tail tee test tr tty unexpand uniq wc which who whoami xargs yes ar time nslookup free pgrep pkill top uptime watch realpath killall chvt deallocvt openvt setkeycodes setlogcons kbd_mode"
+DEST_USRSBIN="acpid add-shell addgroup adduser arp chat chpasswd delgroup deluser dhcprelay dnsd fakeidentd ftpd hdparm httpd ifplugd inetd lspci ntpd rdate rdev readprofile remove-shell sendmail sha256sum sha512sum telnetd tftpd tunctl udhcpd watchdog chroot"

@@ -1,0 +1,15 @@
+By Yauheni Kaliuta <yauheni.kaliuta@nokia.com>
+
+Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-04-29  
+---
+
+--- a/networking/interface.c
++++ b/networking/interface.c
+@@ -622,6 +622,7 @@ static int if_fetch(struct interface *if
+ 
+ 	strncpy_IFNAMSIZ(ifr.ifr_name, ifname);
+ 	memset(ife->hwaddr, 0, 32);
++	memset(ifr.ifr_hwaddr.sa_data, 0, 8);
+ 	if (ioctl(skfd, SIOCGIFHWADDR, &ifr) >= 0)
+ 		memcpy(ife->hwaddr, ifr.ifr_hwaddr.sa_data, 8);
+ 

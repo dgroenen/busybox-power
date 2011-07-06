@@ -1,0 +1,46 @@
+#!/bin/sh
+
+test "$1" = install || exit 0 # upgrades are fine
+
+# Detect environment
+#if test ! -e /proc/component_version
+if test -d /scratchbox
+  then
+    echo "busybox-power: Scratchbox environment detected"
+    ENVIRONMENT="SDK"
+  else
+    PROD=$(cat /proc/component_version | grep product | cut -d" " -f 6)
+    case $PROD in
+      RX-51)
+        echo "busybox-power: Maemo (N900) environment detected"
+        ENVIRONMENT="N900"
+        ;;
+      *)
+        # Unsupported, use the least strict environment (SDK)
+        echo "busybox-power: unsupported environment, using SDK codepath.."
+        ENVIRONMENT="SDK"
+      ;;
+    esac
+fi
+
+case $ENVIRONMENT in
+  SDK)
+    # Extra warning doesn't apply to SDK, just exit
+    exit 0
+  ;;
+  N900)
+    f=/tmp/busybox-power-msg
+    cat > $f <<EOF
+Warning: This package touches an essential system binary!
+Even though installation should be safe, a reflash might be required if something does go wrong (i.e. worst-case scenario).
+
+Files overwritten by this package:
+bin/busybox
+EOF
+    maemo-confirm-text "Installation notes" $f
+    res=$?
+    rm -f $f
+    exit $res
+  ;;
+esac
+

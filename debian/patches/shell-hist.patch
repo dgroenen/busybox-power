@@ -1,0 +1,213 @@
+Patch to only update history upon shell exit.
+Should prevent unnecessary wear on the flash and save some power.
+By Alexander Shishkin <ext-alexander.shishkin@nokia.com>
+
+Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-04-29  
+---
+
+--- a/libbb/lineedit.c
++++ b/libbb/lineedit.c
+@@ -1275,130 +1275,52 @@ static int get_next_history(void)
+ }
+ 
+ # if ENABLE_FEATURE_EDITING_SAVEHISTORY
+-/* We try to ensure that concurrent additions to the history
+- * do not overwrite each other.
+- * Otherwise shell users get unhappy.
+- *
+- * History file is trimmed lazily, when it grows several times longer
+- * than configured MAX_HISTORY lines.
+- */
+-
+-static void free_line_input_t(line_input_t *n)
+-{
+-	int i = n->cnt_history;
+-	while (i > 0)
+-		free(n->history[--i]);
+-	free(n);
+-}
+-
+ /* state->flags is already checked to be nonzero */
+-static void load_history(line_input_t *st_parm)
++static void load_history(const char *fromfile)
+ {
+-	char *temp_h[MAX_HISTORY];
+-	char *line;
+ 	FILE *fp;
+-	unsigned idx, i, line_len;
++	int hi = 0;
+ 
+-	/* NB: do not trash old history if file can't be opened */
++	if (!state->cnt_history) {
++		fp = fopen(fromfile, "r");
++		if (fp) {
++			for (hi = 0; hi < MAX_HISTORY;) {
++				char *hl = xmalloc_fgetline(fp);
++				int l;
+ 
+-	fp = fopen_for_read(st_parm->hist_file);
+-	if (fp) {
+-		/* clean up old history */
+-		for (idx = st_parm->cnt_history; idx > 0;) {
+-			idx--;
+-			free(st_parm->history[idx]);
+-			st_parm->history[idx] = NULL;
+-		}
+-
+-		/* fill temp_h[], retaining only last MAX_HISTORY lines */
+-		memset(temp_h, 0, sizeof(temp_h));
+-		st_parm->cnt_history_in_file = idx = 0;
+-		while ((line = xmalloc_fgetline(fp)) != NULL) {
+-			if (line[0] == '\0') {
+-				free(line);
+-				continue;
+-			}
+-			free(temp_h[idx]);
+-			temp_h[idx] = line;
+-			st_parm->cnt_history_in_file++;
+-			idx++;
+-			if (idx == MAX_HISTORY)
+-				idx = 0;
+-		}
+-		fclose(fp);
+-
+-		/* find first non-NULL temp_h[], if any */
+-		if (st_parm->cnt_history_in_file) {
+-			while (temp_h[idx] == NULL) {
+-				idx++;
+-				if (idx == MAX_HISTORY)
+-					idx = 0;
++				if (!hl)
++					break;
++				l = strlen(hl);
++				if (l >= MAX_LINELEN)
++					hl[MAX_LINELEN-1] = '\0';
++				if (l == 0 || hl[0] == ' ') {
++					free(hl);
++					continue;
++				}
++				state->history[hi++] = hl;
+ 			}
++			fclose(fp);
+ 		}
+-
+-		/* copy temp_h[] to st_parm->history[] */
+-		for (i = 0; i < MAX_HISTORY;) {
+-			line = temp_h[idx];
+-			if (!line)
+-				break;
+-			idx++;
+-			if (idx == MAX_HISTORY)
+-				idx = 0;
+-			line_len = strlen(line);
+-			if (line_len >= MAX_LINELEN)
+-				line[MAX_LINELEN-1] = '\0';
+-			st_parm->history[i++] = line;
+-		}
+-		st_parm->cnt_history = i;
++		state->cur_history = state->cnt_history = hi;
+ 	}
+ }
+ 
+ /* state->flags is already checked to be nonzero */
+-static void save_history(char *str)
++void save_history(line_input_t *);
++void save_history(line_input_t *st)
+ {
+-	int fd;
+-	int len, len2;
++	FILE *fp;
+ 
+-	fd = open(state->hist_file, O_WRONLY | O_CREAT | O_APPEND, 0600);
+-	if (fd < 0)
+-		return;
+-	xlseek(fd, 0, SEEK_END); /* paranoia */
+-	len = strlen(str);
+-	str[len] = '\n'; /* we (try to) do atomic write */
+-	len2 = full_write(fd, str, len + 1);
+-	str[len] = '\0';
+-	close(fd);
+-	if (len2 != len + 1)
+-		return; /* "wtf?" */
+-
+-	/* did we write so much that history file needs trimming? */
+-	state->cnt_history_in_file++;
+-	if (state->cnt_history_in_file > MAX_HISTORY * 4) {
+-		char *new_name;
+-		line_input_t *st_temp;
+-
+-		/* we may have concurrently written entries from others.
+-		 * load them */
+-		st_temp = new_line_input_t(state->flags);
+-		st_temp->hist_file = state->hist_file;
+-		load_history(st_temp);
+-
+-		/* write out temp file and replace hist_file atomically */
+-		new_name = xasprintf("%s.%u.new", state->hist_file, (int) getpid());
+-		fd = open(state->hist_file, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+-		if (fd >= 0) {
+-			FILE *fp;
++	if (st->cnt_history) {
++		fp = fopen(st->hist_file, "w");
++		if (fp) {
+ 			int i;
+ 
+-			fp = xfdopen_for_write(fd);
+-			for (i = 0; i < st_temp->cnt_history; i++)
+-				fprintf(fp, "%s\n", st_temp->history[i]);
++			for (i = 0; i < st->cnt_history; i++) {
++				fprintf(fp, "%s\n", st->history[i]);
++			}
+ 			fclose(fp);
+-			if (rename(new_name, state->hist_file) == 0)
+-				state->cnt_history_in_file = st_temp->cnt_history;
+ 		}
+-		free(new_name);
+-		free_line_input_t(st_temp);
+ 	}
+ }
+ # else
+@@ -1435,10 +1357,6 @@ static void remember_in_history(char *st
+ 	/* i <= MAX_HISTORY */
+ 	state->cur_history = i;
+ 	state->cnt_history = i;
+-# if MAX_HISTORY > 0 && ENABLE_FEATURE_EDITING_SAVEHISTORY
+-	if ((state->flags & SAVE_HISTORY) && state->hist_file)
+-		save_history(str);
+-# endif
+ 	IF_FEATURE_EDITING_FANCY_PROMPT(num_ok_lines++;)
+ }
+ 
+@@ -1960,7 +1878,7 @@ int FAST_FUNC read_line_input(const char
+ # if ENABLE_FEATURE_EDITING_SAVEHISTORY
+ 	if ((state->flags & SAVE_HISTORY) && state->hist_file)
+ 		if (state->cnt_history == 0)
+-			load_history(state);
++			load_history(state->hist_file);
+ # endif
+ 	if (state->flags & DO_HISTORY)
+ 		state->cur_history = state->cnt_history;
+diff -urpN a/shell/ash.c b/shell/ash.c
+--- a/shell/ash.c
++++ b/shell/ash.c
+@@ -51,6 +51,9 @@
+ #else
+ # define CLEAR_RANDOM_T(rnd) ((void)0)
+ #endif
++#if ENABLE_FEATURE_EDITING_SAVEHISTORY
++void save_history(line_input_t *);
++#endif
+ 
+ #include "NUM_APPLETS.h"
+ #if NUM_APPLETS == 1
+@@ -12810,6 +12813,10 @@ exitshell(void)
+ 	char *p;
+ 	int status;
+ 
++	if (iflag && (line_input_state->flags & SAVE_HISTORY)
++	    && line_input_state->hist_file && !shlvl) {
++		save_history(line_input_state);
++	}
+ 	status = exitstatus;
+ 	TRACE(("pid %d, exitshell(%d)\n", getpid(), status));
+ 	if (setjmp(loc.loc)) {

@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+/opt/busybox-power/busybox.power sh /opt/busybox-power/install-binary.sh
+

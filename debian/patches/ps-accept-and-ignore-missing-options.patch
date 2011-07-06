@@ -1,0 +1,26 @@
+Make "ps" accept (but ignore) all missing common options expected to be supported by "ps"
+This is required to not break scripts which are using these options
+
+By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-28
+---
+
+--- a/procps/ps.c
++++ b/procps/ps.c
+@@ -559,7 +559,7 @@ int ps_main(int argc UNUSED_PARAM, char 
+ 	/* -w is a bit complicated */
+ 	int w_count = 0;
+ 	opt_complementary = "-:ww";
+-	opts = getopt32(argv, IF_SELINUX("Z")IF_FEATURE_SHOW_THREADS("T")"w", &w_count);
++	opts = getopt32(argv, IF_SELINUX("Z")IF_FEATURE_SHOW_THREADS("T")"w""ANdeagrxCGUgpstuUojOlFfsvuXVmMLScnfyH", &w_count, NULL);
+ 	/* if w is given once, GNU ps sets the width to 132,
+ 	 * if w is given more than once, it is "unlimited"
+ 	 */
+@@ -574,7 +574,7 @@ int ps_main(int argc UNUSED_PARAM, char 
+ # else
+ 	/* -w is not supported, only -Z and/or -T */
+ 	opt_complementary = "-";
+-	opts = getopt32(argv, IF_SELINUX("Z")IF_FEATURE_SHOW_THREADS("T"));
++	opts = getopt32(argv, IF_SELINUX("Z")IF_FEATURE_SHOW_THREADS("T")"ANdeagrxCGUgpstuUojOlFfsvuXVmMLScnfyHw", NULL);
+ # endif
+ #endif
+ 

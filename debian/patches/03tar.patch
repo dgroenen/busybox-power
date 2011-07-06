@@ -1,0 +1,58 @@
+Allows compatibility with tar -m / --touch command line option
+By Yauheni Kaliuta <yauheni.kaliuta@nokia.com>
+
+Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-04-29  
+---
+
+--- a/archival/Config.src
++++ b/archival/Config.src
+@@ -280,6 +280,13 @@ config FEATURE_TAR_LONG_OPTIONS
+ 	help
+ 	  Enable use of long options, increases size by about 400 Bytes
+ 
++config FEATURE_TAR_TOUCH
++	bool "Enable ignoring touch option"
++	default n
++	depends on TAR
++	help
++	  Allows compatibility with -m / --touch command line option.
++
+ config FEATURE_TAR_TO_COMMAND
+ 	bool "Support for writing to an external program"
+ 	default y
+--- a/archival/tar.c
++++ b/archival/tar.c
+@@ -777,6 +777,7 @@ enum {
+ 	IF_FEATURE_TAR_TO_COMMAND(OPTBIT_2COMMAND   ,)
+ 	OPTBIT_NUMERIC_OWNER,
+ 	OPTBIT_NOPRESERVE_PERM,
++	IF_FEATURE_TAR_TOUCH(   OPTBIT_TOUCH       ,)
+ 	OPTBIT_OVERWRITE,
+ #endif
+ 	OPT_TEST         = 1 << 0, // t
+@@ -800,6 +801,7 @@ enum {
+ 	OPT_2COMMAND        = IF_FEATURE_TAR_TO_COMMAND(  (1 << OPTBIT_2COMMAND       )) + 0, // to-command
+ 	OPT_NUMERIC_OWNER   = IF_FEATURE_TAR_LONG_OPTIONS((1 << OPTBIT_NUMERIC_OWNER  )) + 0, // numeric-owner
+ 	OPT_NOPRESERVE_PERM = IF_FEATURE_TAR_LONG_OPTIONS((1 << OPTBIT_NOPRESERVE_PERM)) + 0, // no-same-permissions
++	OPT_TOUCH           = IF_FEATURE_TAR_TOUCH(   (1<<OPTBIT_TOUCH       )) + 0, // m
+ 	OPT_OVERWRITE       = IF_FEATURE_TAR_LONG_OPTIONS((1 << OPTBIT_OVERWRITE      )) + 0, // overwrite
+ };
+ #if ENABLE_FEATURE_TAR_LONG_OPTIONS
+@@ -853,6 +855,9 @@ static const char tar_longopts[] ALIGN1 
+ # if ENABLE_FEATURE_TAR_FROM
+ 	"exclude\0"             Required_argument "\xff"
+ # endif
++# if ENABLE_FEATURE_TAR_TOUCH
++	"touch\0"               No_argument       "m"
++# endif
+ 	;
+ #endif
+ 
+@@ -929,6 +934,7 @@ int tar_main(int argc UNUSED_PARAM, char
+ 		IF_FEATURE_SEAMLESS_GZ(  "z"   )
+ 		IF_FEATURE_SEAMLESS_Z(   "Z"   )
+ 		IF_FEATURE_TAR_NOPRESERVE_TIME("m")
++		IF_FEATURE_TAR_TOUCH(   "m"   )
+ 		, &base_dir // -C dir
+ 		, &tar_filename // -f filename
+ 		IF_FEATURE_TAR_FROM(, &(tar_handle->accept)) // T

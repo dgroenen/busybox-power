@@ -1,0 +1,68 @@
+Change top to display RSS instead of VSZ.
+By Alexander Shishkin <ext-alexander.shishkin@nokia.com>
+
+Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-04-29  
+---
+
+--- a/procps/top.c
++++ b/procps/top.c
+@@ -35,7 +35,7 @@
+ 
+ 
+ typedef struct top_status_t {
+-	unsigned long vsz;
++	unsigned long rss;
+ #if ENABLE_FEATURE_TOP_CPU_USAGE_PERCENTAGE
+ 	unsigned long ticks;
+ 	unsigned pcpu; /* delta of ticks */
+@@ -147,8 +147,8 @@ static int pid_sort(top_status_t *P, top
+ static int mem_sort(top_status_t *P, top_status_t *Q)
+ {
+ 	/* We want to avoid unsigned->signed and truncation errors */
+-	if (Q->vsz < P->vsz) return -1;
+-	return Q->vsz != P->vsz; /* 0 if ==, 1 if > */
++	if (Q->rss < P->rss) return -1;
++	return Q->rss != P->rss; /* 0 if ==, 1 if > */
+ }
+ 
+ 
+@@ -519,7 +519,7 @@ static NOINLINE void display_process_lis
+ 
+ 	/* what info of the processes is shown */
+ 	printf(OPT_BATCH_MODE ? "%.*s" : "\033[7m%.*s\033[0m", scr_width,
+-		"  PID  PPID USER     STAT   VSZ %MEM"
++		"  PID  PPID USER     STAT   RSS %MEM"
+ 		IF_FEATURE_TOP_SMP_PROCESS(" CPU")
+ 		IF_FEATURE_TOP_CPU_USAGE_PERCENTAGE(" %CPU")
+ 		" COMMAND");
+@@ -588,16 +588,16 @@ static NOINLINE void display_process_lis
+ 	s = top;
+ 	while (--lines_rem >= 0) {
+ 		unsigned col;
+-		CALC_STAT(pmem, (s->vsz*pmem_scale + pmem_half) >> pmem_shift);
++		CALC_STAT(pmem, (s->rss*pmem_scale + pmem_half) >> pmem_shift);
+ #if ENABLE_FEATURE_TOP_CPU_USAGE_PERCENTAGE
+ 		CALC_STAT(pcpu, (s->pcpu*pcpu_scale + pcpu_half) >> pcpu_shift);
+ #endif
+ 
+-		if (s->vsz >= 100000)
+-			sprintf(vsz_str_buf, "%6ldm", s->vsz/1024);
++		if (s->rss >= 100000)
++			sprintf(vsz_str_buf, "%6ldm", s->rss/1024);
+ 		else
+-			sprintf(vsz_str_buf, "%7ld", s->vsz);
+-		/* PID PPID USER STAT VSZ %MEM [%CPU] COMMAND */
++			sprintf(vsz_str_buf, "%7ld", s->rss);
++		/* PID PPID USER STAT RSS %MEM %CPU COMMAND */
+ 		col = snprintf(line_buf, scr_width,
+ 				"\n" "%5u%6u %-8.8s %s%s" FMT
+ 				IF_FEATURE_TOP_SMP_PROCESS(" %3d")
+@@ -930,7 +930,7 @@ int top_main(int argc UNUSED_PARAM, char
+ 				top = xrealloc_vector(top, 6, ntop++);
+ 				top[n].pid = p->pid;
+ 				top[n].ppid = p->ppid;
+-				top[n].vsz = p->vsz;
++				top[n].rss = p->rss;
+ #if ENABLE_FEATURE_TOP_CPU_USAGE_PERCENTAGE
+ 				top[n].ticks = p->stime + p->utime;
+ #endif

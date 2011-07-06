@@ -1,0 +1,73 @@
+Make the showkey's "-a" option default instead of "-k"
+
+By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-27
+---
+
+--- a/console-tools/showkey.c
++++ b/console-tools/showkey.c
+@@ -46,8 +46,8 @@ int showkey_main(int argc, char **argv) 
+ int showkey_main(int argc UNUSED_PARAM, char **argv)
+ {
+ 	enum {
+-		OPT_a = (1<<0), // display the decimal/octal/hex values of the keys
+-		OPT_k = (1<<1), // display only the interpreted keycodes (default)
++		OPT_a = (1<<0), // display the decimal/octal/hex values of the keys (default)
++		OPT_k = (1<<1), // display only the interpreted keycodes
+ 		OPT_s = (1<<2), // display only the raw scan-codes
+ 	};
+ 
+@@ -63,20 +63,7 @@ int showkey_main(int argc UNUSED_PARAM, 
+ 
+ #define press_keys "Press any keys, program terminates %s:\r\n\n"
+ 
+-	if (option_mask32 & OPT_a) {
+-		// just read stdin char by char
+-		unsigned char c;
+-
+-		printf(press_keys, "on EOF (ctrl-D)");
+-
+-		// read and show byte values
+-		while (1 == read(STDIN_FILENO, &c, 1)) {
+-			printf("%3u 0%03o 0x%02x\r\n", c, c, c);
+-			if (04 /*CTRL-D*/ == c)
+-				break;
+-		}
+-
+-	} else {
++	if (option_mask32 & OPT_k || option_mask32 & OPT_s) {
+ 			// we assume a PC keyboard
+ 			xioctl(STDIN_FILENO, KDGKBMODE, &kbmode);
+ 			printf("Keyboard mode was %s.\r\n\n",
+@@ -133,6 +120,19 @@ int showkey_main(int argc UNUSED_PARAM, 
+ 
+ 		// restore keyboard mode
+ 		xioctl(STDIN_FILENO, KDSKBMODE, (void *)(ptrdiff_t)kbmode);
++
++	} else {
++		// just read stdin char by char
++		unsigned char c;
++
++		printf(press_keys, "on EOF (ctrl-D)");
++
++		// read and show byte values
++		while (1 == read(STDIN_FILENO, &c, 1)) {
++			printf("%3u 0%03o 0x%02x\r\n", c, c, c);
++			if (04 /*CTRL-D*/ == c)
++				break;
++		}
+ 	}
+ 
+ 	// // restore console settings
+--- a/include/usage.src.h
++++ b/include/usage.src.h
+@@ -3488,8 +3488,8 @@ INSERT
+ #define showkey_full_usage "\n\n" \
+        "Show keys pressed\n" \
+      "\nOptions:" \
+-     "\n	-a	Display decimal/octal/hex values of the keys" \
+-     "\n	-k	Display interpreted keycodes (default)" \
++     "\n	-a	Display decimal/octal/hex values of the keys (default)" \
++     "\n	-k	Display interpreted keycodes" \
+      "\n	-s	Display raw scan-codes" \
+ 
+ #define slattach_trivial_usage \

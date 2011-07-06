@@ -1,0 +1,16 @@
+Flush all open files after showing files
+By Yauheni Kaliuta <yauheni.kaliuta@nokia.com>
+
+Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-04-29  
+---
+
+--- a/coreutils/ls.c
++++ b/coreutils/ls.c
+@@ -784,6 +784,7 @@ static void showfiles(struct dnode **dn,
+ 			}
+ 		}
+ 		putchar('\n');
++		fflush(NULL);
+ 		column = 0;
+ 	}
+ }
