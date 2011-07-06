@@ -9,7 +9,7 @@
 # By Dennis Groenen <dennis_groenen@hotmail.com>
 # GPLv3 licensed
 
-# Version 0.3 06-03-2011 (MM-DD-YYYY)
+# Version 0.3 07-03-2011 (MM-DD-YYYY)
 # 0.1: Initial release
 # 0.2: Minor clean-ups and be quieter
 # 0.3: Add support for multiple environments
