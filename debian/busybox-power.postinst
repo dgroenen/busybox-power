@@ -3,3 +3,8 @@ set -e
 
 /opt/busybox-power/busybox.power sh /opt/busybox-power/install-binary.sh
 
+# Workaround for bug 5317
+if ! grep -q "trap exit SIGHUP SIGINT SIGTERM" /home/user/.profile; then
+  echo "trap exit SIGHUP SIGINT SIGTERM #by busybox-power" >> /home/user/.profile
+fi
+
