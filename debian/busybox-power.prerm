@@ -3,8 +3,8 @@ set -e
 
 sh /opt/busybox-power/uninstall-binary.sh
 
-if grep -q "trap exit SIGHUP SIGINT SIGTERM #by busybox-power" /home/user/.profile; then
-  sed '/trap exit SIGHUP SIGINT SIGTERM #by busybox-power/d' /home/user/.profile > /tmp/.profile.sed
-  mv /tmp/.profile.sed /home/user/.profile
+if grep -q "trap exit SIGHUP SIGINT SIGTERM #by busybox-power" /etc/profile; then
+  sed '/trap exit SIGHUP SIGINT SIGTERM #by busybox-power/d' /etc/profile > /tmp/profile.sed
+  mv /tmp/profile.sed /etc/profile
 fi
 
