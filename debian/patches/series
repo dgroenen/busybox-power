@@ -6,7 +6,6 @@ init-console.patch
 version.patch
 
 #Patches ported from Nokia's busybox sources
-shell-hist.patch
 03tar.patch
 05thumb.patch
 06ls.patch
