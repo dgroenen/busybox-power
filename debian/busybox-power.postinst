@@ -4,7 +4,8 @@ set -e
 /opt/busybox-power/busybox.power sh /opt/busybox-power/install-binary.sh
 
 # Workaround for bug 5317
-if ! grep -q "trap exit SIGHUP SIGINT SIGTERM" /etc/profile; then
-  echo "trap exit SIGHUP SIGINT SIGTERM #by busybox-power" >> /etc/profile
+line="trap exit SIGHUP #by busybox-power"
+if ! grep -F -q "$line" /etc/profile; then
+  echo "$line" >> /etc/profile
 fi
 
