@@ -1,0 +1,90 @@
+--- a/shell/ash.c
++++ b/shell/ash.c
+@@ -182,6 +182,24 @@
+ //config:	  This option recreates the prompt string from the environment
+ //config:	  variable each time it is displayed.
+ //config:
++//config:config ASH_HIST_BUFFER
++//config:	bool "History buffer"
++//config:	default n
++//config:	depends on ASH && FEATURE_EDITING_SAVEHISTORY
++//config:	help
++//config:	  Allows you to set a temporary location for .ash_history.
++//config:	  History is saved to this custom location, and written out to
++//config:	  its default location (~/.ash_history) upon shell exit.
++//config:	  Useful to prevent wear on flash-based storage devices.
++//config:
++//config:config ASH_HIST_BUFFER_PATH
++//config:	string "History buffer location"
++//config:	default "/tmp"
++//config:	depends on ASH && ASH_HIST_BUFFER
++//config:	help
++//config:	  Directory which will be used to save the shell history until
++//config:	  ash is exited.
++//config:
+ 
+ //usage:#define ash_trivial_usage NOUSAGE_STR
+ //usage:#define ash_full_usage ""
+@@ -12810,6 +12828,14 @@ exitshell(void)
+ 	char *p;
+ 	int status;
+ 
++#if ENABLE_ASH_HIST_BUFFER
++	const char *tmphistory = lookupvar("HISTFILE");
++	const char *storedhistory = lookupvar("STOREDHISTFILE");
++
++	if (storedhistory != NULL) /* is NULL when setting up the history buffer failed; check this before copying */
++		copy_file(tmphistory, storedhistory, FILEUTILS_FORCE | FILEUTILS_DEREFERENCE | FILEUTILS_PRESERVE_STATUS);
++#endif
++
+ 	status = exitstatus;
+ 	TRACE(("pid %d, exitshell(%d)\n", getpid(), status));
+ 	if (setjmp(loc.loc)) {
+@@ -13056,9 +13082,47 @@ int ash_main(int argc UNUSED_PARAM, char
+ 		if (hp == NULL) {
+ 			hp = lookupvar("HOME");
+ 			if (hp != NULL) {
++#if ENABLE_ASH_HIST_BUFFER
++				char *tmppath;
++				char *tmphistory;
++				char *storedhistory;
++				const char *user = lookupvar("USER");
++
++				tmppath = concat_path_file(CONFIG_ASH_HIST_BUFFER_PATH, user);
++				storedhistory = concat_path_file(hp, ".ash_history");
++
++				if (access(CONFIG_ASH_HIST_BUFFER_PATH, R_OK == -1)) {
++					bb_simple_perror_msg("could not access history buffer path");
++					goto bail;
++				}
++				if (bb_make_directory(tmppath, 0700, FILEUTILS_RECUR)) {
++					/* bb_make_directory is noisy, no need for an additional error message here */
++					goto bail;
++				}
++
++				tmphistory = concat_path_file(tmppath, ".ash_history");
++				if (access(storedhistory, R_OK) == -1)
++					creat(tmphistory, 0664);
++				if (access(tmphistory, R_OK | W_OK) == -1) /* copy stored history to buffer locaton if the latter is non-existant */
++					copy_file(storedhistory, tmphistory, FILEUTILS_FORCE | FILEUTILS_DEREFERENCE | FILEUTILS_PRESERVE_STATUS);
++
++				setvar("STOREDHISTFILE", storedhistory, 0);
++				goto out;
++
++ bail:
++				errno = 0;
++				bb_simple_perror_msg("shell history will not be saved");
++				tmphistory = xasprintf("/dev/null");
++ out:
++				setvar("HISTFILE", tmphistory, 0);
++				free(storedhistory);
++				free(tmphistory);
++				free(tmppath);
++#else
+ 				char *defhp = concat_path_file(hp, ".ash_history");
+ 				setvar("HISTFILE", defhp, 0);
+ 				free(defhp);
++#endif
+ 			}
+ 		}
+ 	}
