@@ -6,7 +6,6 @@ init-console.patch
 version.patch
 
 #Patches ported from Nokia's busybox sources
-ash-history-buffer.patch
 03tar.patch
 05thumb.patch
 06ls.patch
@@ -21,4 +20,5 @@ parse-complete-hostname.patch
 showkey-any-stdin.patch
 showkey-default-option.patch
 ps-accept-and-ignore-missing-options.patch
+ash-history-buffer.patch
 
