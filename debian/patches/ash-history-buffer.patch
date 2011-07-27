@@ -33,14 +33,14 @@
 +	const char *tmphistory = lookupvar("HISTFILE");
 +	const char *storedhistory = lookupvar("STOREDHISTFILE");
 +
-+	if (storedhistory != NULL) /* is NULL when setting up the history buffer failed; check this before copying */
++	if (storedhistory) /* is NULL when setting up the history buffer failed; check this before copying */
 +		copy_file(tmphistory, storedhistory, FILEUTILS_FORCE | FILEUTILS_DEREFERENCE | FILEUTILS_PRESERVE_STATUS);
 +#endif
 +
  	status = exitstatus;
  	TRACE(("pid %d, exitshell(%d)\n", getpid(), status));
  	if (setjmp(loc.loc)) {
-@@ -13056,9 +13082,47 @@ int ash_main(int argc UNUSED_PARAM, char
+@@ -13056,9 +13082,61 @@ int ash_main(int argc UNUSED_PARAM, char
  		if (hp == NULL) {
  			hp = lookupvar("HOME");
  			if (hp != NULL) {
@@ -51,23 +51,37 @@
 +				const char *user = lookupvar("USER");
 +
 +				tmppath = concat_path_file(CONFIG_ASH_HIST_BUFFER_PATH, user);
++				tmphistory = concat_path_file(tmppath, ".ash_history");
 +				storedhistory = concat_path_file(hp, ".ash_history");
 +
-+				if (access(CONFIG_ASH_HIST_BUFFER_PATH, R_OK == -1)) {
-+					bb_simple_perror_msg("could not access history buffer path");
-+					goto bail;
++				if (access(tmphistory, R_OK | W_OK) == -1) {
++					if (access(CONFIG_ASH_HIST_BUFFER_PATH, R_OK == -1)) {
++						bb_simple_perror_msg("could not access history buffer path");
++						goto bail;
++					}
++					if (bb_make_directory(tmppath, 0700, FILEUTILS_RECUR)) {
++						/* bb_make_directory is noisy, no need for an additional error message here */
++						goto bail;
++					}
++					if (access(storedhistory, R_OK) == -1) {
++						creat(tmphistory, 0644);
++					} else {
++						copy_file(storedhistory, tmphistory, FILEUTILS_FORCE | FILEUTILS_DEREFERENCE | FILEUTILS_PRESERVE_STATUS);
++					}
++				} else { /* (security) checks before reusing existing temporary history file */
++					struct stat stat_tmphistory;
++					lstat(tmphistory, &stat_tmphistory);
++					if (!S_ISREG(stat_tmphistory.st_mode)) {
++						errno = 0;
++						bb_simple_perror_msg("history buffer is not a regular file");
++						goto bail;
++					}
++					if (stat_tmphistory.st_uid != geteuid() || stat_tmphistory.st_gid != getegid()) {
++						errno = 0;
++						bb_simple_perror_msg("history buffer is not exclusive to the shell user");   
++						goto bail;
++					}
 +				}
-+				if (bb_make_directory(tmppath, 0700, FILEUTILS_RECUR)) {
-+					/* bb_make_directory is noisy, no need for an additional error message here */
-+					goto bail;
-+				}
-+
-+				tmphistory = concat_path_file(tmppath, ".ash_history");
-+				if (access(storedhistory, R_OK) == -1)
-+					creat(tmphistory, 0664);
-+				if (access(tmphistory, R_OK | W_OK) == -1) /* copy stored history to buffer locaton if the latter is non-existant */
-+					copy_file(storedhistory, tmphistory, FILEUTILS_FORCE | FILEUTILS_DEREFERENCE | FILEUTILS_PRESERVE_STATUS);
-+
 +				setvar("STOREDHISTFILE", storedhistory, 0);
 +				goto out;
 +
