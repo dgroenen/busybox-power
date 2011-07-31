@@ -1,3 +1,11 @@
+busybox-power (1.18.5power3) unstable; urgency=low
+
+  * Apply workaround for bug #5317
+  * Introduce new ash history buffer (fixes bugs #4174, #4175)
+  * Update e-mail address
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sun, 31 Jul 2011 14:33:01 +0200
+
 busybox-power (1.18.5power2) unstable; urgency=low
 
   * Add support for installation in Maemo's SDK
