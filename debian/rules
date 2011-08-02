@@ -29,7 +29,7 @@ $(STAMPS_DIR)/source:
 	cd $(DIR); QUILT_PATCHES=$(CURDIR)/debian/patches quilt --quiltrc /dev/null push -a || test $$? = 2
 	touch $@
 
-setup: $(STAMPS_DIR)/setup_maemo
+setup: $(STAMPS_DIR)/setup_busybox $(STAMPS_DIR)/setup_busybox_root
 
 $(STAMPS_DIR)/setup_%: SOURCE_DIR=$(BUILD_DIR)/source
 $(STAMPS_DIR)/setup_%: DIR=$(BUILD_DIR)/build_$*
@@ -41,7 +41,7 @@ $(STAMPS_DIR)/setup_%: $(STAMPS_DIR)/source
 	make -C '$(DIR)' oldconfig
 	touch $@
 
-build: $(STAMPS_DIR)/build_maemo
+build: $(STAMPS_DIR)/build_busybox $(STAMPS_DIR)/build_busybox_root
 
 $(STAMPS_DIR)/build_%: DIR=$(BUILD_DIR)/build_$*
 $(STAMPS_DIR)/build_%: $(STAMPS_DIR)/setup_%
@@ -63,9 +63,11 @@ clean:
 
 binary-indep:
 
-binary-arch: DIR = $(BUILD_DIR)/build_maemo
-binary-arch: DH_OPTIONS = -pbusybox-power
-binary-arch: $(STAMPS_DIR)/build_maemo
+binary-arch: binary-arch_busybox binary-arch_busybox_root binary-arch_all
+
+binary-arch_busybox: DIR = $(BUILD_DIR)/build_busybox
+binary-arch_busybox: DH_OPTIONS = -pbusybox-power
+binary-arch_busybox: $(STAMPS_DIR)/build_busybox
 	dh_testdir
 	dh_testroot
 	dh_clean -k -d
@@ -74,7 +76,12 @@ binary-arch: $(STAMPS_DIR)/build_maemo
 	install -D -m755 debian/scripts/uninstall-binary.sh debian/busybox-power/opt/busybox-power/uninstall-binary.sh
 	install -D -m755 $(DIR)/busybox_unstripped debian/busybox-power/opt/busybox-power/busybox.power
 
-	$(MAKE) -f debian/rules binary-arch_all
+binary-arch_busybox_root: DIR = $(BUILD_DIR)/build_busybox_root
+binary-arch_busybox_root: export DH_OPTIONS = -pbusybox-power
+binary-arch_busybox_root: $(STAMPS_DIR)/build_busybox_root
+	dh_testdir
+	dh_testroot
+	install -D -m755 $(DIR)/busybox_unstripped debian/busybox-power/bin/busybox_root
 
 binary-arch_all:
 	dh_installdirs

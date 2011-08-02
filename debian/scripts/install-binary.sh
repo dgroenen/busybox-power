@@ -5,23 +5,26 @@
 # a similiar fashion as locations are defined in the "functions" file.
 #
 # The scripts check whether symlinks/binaries of the utilities already exist, and if not,
-# it checks whether the new busybox binary supports it. If so, it creates a symlink to /bin/busybox.
+# it checks whether the new busybox(_root) binary supports it. If so, it creates a symlink to /bin/busybox(_root).
 #
 # NB The busybox binary needs to support the install applet
 
-# By Dennis Groenen <dennis_groenen@hotmail.com>
+# By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
 
-# Version 0.3 07-03-2011 (MM-DD-YYYY)
+# Version 0.4 08-02-2011 (MM-DD-YYYY)
 # 0.1: Initial release
 # 0.2: Use $EXECPWR to not have to rely on /bin/busybox' functions
 #      Minor clean-ups and be quieter
 # 0.3: Add support for multiple environments
 #      Make use of functions in this script
 #      Implement additional checks
+# 0.4: Add support for symlinking against busybox_root
+#      Update email address
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
+BUSYBOXROOT="/bin/busybox_root"
 VERBOSE="0"
 
 # Print extra information in verbose mode
@@ -122,10 +125,11 @@ SYMLINK() {
     # Load defined BusyBox functions
     source $INSTALLDIR/functions
 
-    # Get a list of supported functions by the new binary
+    # Get a list of supported functions by busybox-power (including busybox_root)
     if test -d /tmp/busybox-power; then $EXECPWR rm -Rf /tmp/busybox-power; fi
     $EXECPWR mkdir -p /tmp/busybox-power
     $INSTALLDIR/busybox.power --install -s /tmp/busybox-power
+    $BUSYBOXROOT --install -s /tmp/busybox-power
     $EXECPWR ls /tmp/busybox-power/ > $INSTALLDIR/functions_supported
     $EXECPWR rm -Rf /tmp/busybox-power
 
@@ -134,6 +138,7 @@ SYMLINK() {
     echo -e "\nDESTINATIONS=\"$DESTINATIONS\"" >> $INSTALLDIR/busybox-power.symlinks
     echo -e "\n# Installed symlinks" >> $INSTALLDIR/busybox-power.symlinks
 
+    RESYM="RESYM=\""
     # Walk through all possible destinations
     for DESTDIR in $DESTINATIONS
       do 
@@ -142,24 +147,28 @@ SYMLINK() {
 
         # Set destination directory accordingly
         case $DESTDIR in
-          DEST_BIN)
+          *DEST_BIN)
             DIR="/bin"
           ;;
-          DEST_SBIN)
+          *DEST_SBIN)
             DIR="/sbin"
           ;;
-          DEST_USRBIN)
+          *DEST_USRBIN)
             DIR="/usr/bin"
           ;;
-          DEST_USRSBIN)
+          *DEST_USRSBIN)
             DIR="/usr/sbin"
           ;;
         esac
 
+      # Determine whether we have to symlink to busybox or busybox_root
+      if test `echo $DESTDIR | $EXECPWR cut -c1-1` == "S"
+        then SUID=1; else SUID=0; fi
+
       # Keep track of installed symlinks per destination
       SYMLINKS="$DESTDIR=\""
 
-      if test $VERBOSE == 1; then echo -e "\nSymlinking functions in $DIR"; fi
+      if test $VERBOSE == 1; then echo -e "\nSymlinking functions in $DIR (SUID=$SUID)"; fi
       # Walk through all applications from the current destination
       for APP in $APPLICATIONS
         do
@@ -169,9 +178,29 @@ SYMLINK() {
               # Check whether the function is supported by the busybox binary
               if `$EXECPWR grep -Fq "$APP" $INSTALLDIR/functions_supported` 
                 then
-                  if test $VERBOSE == 1; then echo Symlinking: $DIR/$APP; fi
-                  $EXECPWR ln -s /bin/busybox $DIR/$APP
+                  if test $SUID == 0
+                    then
+                      if test $VERBOSE == 1; then echo "Symlinking: /bin/busybox -> $DIR/$APP"; fi
+                      $EXECPWR ln -s /bin/busybox $DIR/$APP
+                    else
+                      if test $VERBOSE == 1; then echo "Symlinking: $BUSYBOXROOT -> $DIR/$APP"; fi
+                      $EXECPWR ln -s $BUSYBOXROOT $DIR/$APP
+                  fi
                   SYMLINKS="$SYMLINKS $APP" 
+              fi
+            else
+              if test $SUID == 1; then
+                if test -h $DIR/$APP # Check if the app is a symbolic link
+                  then
+	            if test -n "`ls -l $DIR/$APP | grep busybox`" # Check if the symbolic link points to busybox
+	              then
+                        if test $VERBOSE == 1; then echo "Re-symlinking: $BUSYBOXROOT -> $DIR/$APP"; fi
+                        $EXECPWR rm $DIR/$APP
+                        $EXECPWR ln -s $BUSYBOXROOT $DIR/$APP
+                        SYMLINKS="$SYMLINKS $APP"
+                        RESYM="$RESYM $APP"
+                    fi
+                fi
               fi
           fi
       done
@@ -180,6 +209,7 @@ SYMLINK() {
       echo "$SYMLINKS\"" >> $INSTALLDIR/busybox-power.symlinks
     done
 
+    echo "$RESYM\"" >> $INSTALLDIR/busybox-power.symlinks
     $EXECPWR rm $INSTALLDIR/functions_supported
 }
 
