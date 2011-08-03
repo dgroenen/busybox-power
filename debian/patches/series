@@ -21,4 +21,5 @@ showkey-any-stdin.patch
 showkey-default-option.patch
 ps-accept-and-ignore-missing-options.patch
 ash-history-buffer.patch
+ctrl_r-history-search.patch
 
