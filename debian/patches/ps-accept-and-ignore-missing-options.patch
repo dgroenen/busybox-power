@@ -1,12 +1,12 @@
 Make "ps" accept (but ignore) all missing common options expected to be supported by "ps"
 This is required to not break scripts which are using these options
 
-By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-28
+By Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
 ---
 
 --- a/procps/ps.c
 +++ b/procps/ps.c
-@@ -559,7 +559,7 @@ int ps_main(int argc UNUSED_PARAM, char 
+@@ -633,7 +633,7 @@ int ps_main(int argc UNUSED_PARAM, char
  	/* -w is a bit complicated */
  	int w_count = 0;
  	opt_complementary = "-:ww";
@@ -15,7 +15,7 @@ By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-28
  	/* if w is given once, GNU ps sets the width to 132,
  	 * if w is given more than once, it is "unlimited"
  	 */
-@@ -574,7 +574,7 @@ int ps_main(int argc UNUSED_PARAM, char 
+@@ -648,7 +648,7 @@ int ps_main(int argc UNUSED_PARAM, char
  # else
  	/* -w is not supported, only -Z and/or -T */
  	opt_complementary = "-";

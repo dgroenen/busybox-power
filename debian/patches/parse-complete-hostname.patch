@@ -1,10 +1,10 @@
 Parse the complete hostname when set from a file (busybox-1.10.2 behaviour)
-By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-09
+By Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
 ---
 
 --- a/networking/hostname.c
 +++ b/networking/hostname.c
-@@ -17,7 +17,7 @@ static void do_sethostname(char *s, int
+@@ -35,7 +35,7 @@ static void do_sethostname(char *s, int
  //		return;
  	if (isfile) {
  		parser_t *parser = config_open2(s, xfopen_for_read);

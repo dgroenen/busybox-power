@@ -1,11 +1,22 @@
 Make the showkey's "-a" option default instead of "-k"
 
-By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-27
+By Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
 ---
 
 --- a/console-tools/showkey.c
 +++ b/console-tools/showkey.c
-@@ -46,8 +46,8 @@ int showkey_main(int argc, char **argv) 
+@@ -11,8 +11,8 @@
+ //usage:       "[-a | -k | -s]"
+ //usage:#define showkey_full_usage "\n\n"
+ //usage:       "Show keys pressed\n"
+-//usage:     "\n	-a	Display decimal/octal/hex values of the keys"
+-//usage:     "\n	-k	Display interpreted keycodes (default)"
++//usage:     "\n	-a	Display decimal/octal/hex values of the keys (default)"
++//usage:     "\n	-k	Display interpreted keycodes"
+ //usage:     "\n	-s	Display raw scan-codes"
+ 
+ #include "libbb.h"
+@@ -54,8 +54,8 @@ int showkey_main(int argc, char **argv)
  int showkey_main(int argc UNUSED_PARAM, char **argv)
  {
  	enum {
@@ -16,7 +27,7 @@ By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-27
  		OPT_s = (1<<2), // display only the raw scan-codes
  	};
  
-@@ -63,20 +63,7 @@ int showkey_main(int argc UNUSED_PARAM, 
+@@ -71,20 +71,7 @@ int showkey_main(int argc UNUSED_PARAM,
  
  #define press_keys "Press any keys, program terminates %s:\r\n\n"
  
@@ -35,10 +46,10 @@ By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-27
 -
 -	} else {
 +	if (option_mask32 & OPT_k || option_mask32 & OPT_s) {
- 			// we assume a PC keyboard
- 			xioctl(STDIN_FILENO, KDGKBMODE, &kbmode);
- 			printf("Keyboard mode was %s.\r\n\n",
-@@ -133,6 +120,19 @@ int showkey_main(int argc UNUSED_PARAM, 
+ 		// we assume a PC keyboard
+ 		xioctl(STDIN_FILENO, KDGKBMODE, &kbmode);
+ 		printf("Keyboard mode was %s.\r\n\n",
+@@ -141,6 +128,19 @@ int showkey_main(int argc UNUSED_PARAM,
  
  		// restore keyboard mode
  		xioctl(STDIN_FILENO, KDSKBMODE, (void *)(ptrdiff_t)kbmode);
@@ -57,17 +68,4 @@ By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-27
 +		}
  	}
  
- 	// // restore console settings
---- a/include/usage.src.h
-+++ b/include/usage.src.h
-@@ -3488,8 +3488,8 @@ INSERT
- #define showkey_full_usage "\n\n" \
-        "Show keys pressed\n" \
-      "\nOptions:" \
--     "\n	-a	Display decimal/octal/hex values of the keys" \
--     "\n	-k	Display interpreted keycodes (default)" \
-+     "\n	-a	Display decimal/octal/hex values of the keys (default)" \
-+     "\n	-k	Display interpreted keycodes" \
-      "\n	-s	Display raw scan-codes" \
- 
- #define slattach_trivial_usage \
+ 	// restore console settings

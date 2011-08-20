@@ -1,12 +1,12 @@
 Change top to display RSS instead of VSZ.
 By Alexander Shishkin <ext-alexander.shishkin@nokia.com>
 
-Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-04-29  
+Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
 ---
 
 --- a/procps/top.c
 +++ b/procps/top.c
-@@ -35,7 +35,7 @@
+@@ -54,7 +54,7 @@
  
  
  typedef struct top_status_t {
@@ -15,7 +15,7 @@ Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-0
  #if ENABLE_FEATURE_TOP_CPU_USAGE_PERCENTAGE
  	unsigned long ticks;
  	unsigned pcpu; /* delta of ticks */
-@@ -147,8 +147,8 @@ static int pid_sort(top_status_t *P, top
+@@ -166,8 +166,8 @@ static int pid_sort(top_status_t *P, top
  static int mem_sort(top_status_t *P, top_status_t *Q)
  {
  	/* We want to avoid unsigned->signed and truncation errors */
@@ -26,16 +26,25 @@ Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-0
  }
  
  
-@@ -519,7 +519,7 @@ static NOINLINE void display_process_lis
+@@ -538,7 +538,7 @@ static NOINLINE void display_process_lis
  
  	/* what info of the processes is shown */
  	printf(OPT_BATCH_MODE ? "%.*s" : "\033[7m%.*s\033[0m", scr_width,
--		"  PID  PPID USER     STAT   VSZ %MEM"
+-		"  PID  PPID USER     STAT   VSZ %VSZ"
 +		"  PID  PPID USER     STAT   RSS %MEM"
  		IF_FEATURE_TOP_SMP_PROCESS(" CPU")
  		IF_FEATURE_TOP_CPU_USAGE_PERCENTAGE(" %CPU")
  		" COMMAND");
-@@ -588,16 +588,16 @@ static NOINLINE void display_process_lis
+@@ -556,7 +556,7 @@ static NOINLINE void display_process_lis
+ # define FMT "%4u%%"
+ #endif
+ 	/*
+-	 * %VSZ = s->vsz/MemTotal
++	 * %MEM = s->vsz/MemTotal
+ 	 */
+ 	pmem_shift = BITS_PER_INT-11;
+ 	pmem_scale = UPSCALE*(1U<<(BITS_PER_INT-11)) / total_memory;
+@@ -607,16 +607,16 @@ static NOINLINE void display_process_lis
  	s = top;
  	while (--lines_rem >= 0) {
  		unsigned col;
@@ -51,13 +60,13 @@ Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-0
 +			sprintf(vsz_str_buf, "%6ldm", s->rss/1024);
  		else
 -			sprintf(vsz_str_buf, "%7ld", s->vsz);
--		/* PID PPID USER STAT VSZ %MEM [%CPU] COMMAND */
+-		/* PID PPID USER STAT VSZ %VSZ [%CPU] COMMAND */
 +			sprintf(vsz_str_buf, "%7ld", s->rss);
 +		/* PID PPID USER STAT RSS %MEM %CPU COMMAND */
  		col = snprintf(line_buf, scr_width,
  				"\n" "%5u%6u %-8.8s %s%s" FMT
  				IF_FEATURE_TOP_SMP_PROCESS(" %3d")
-@@ -930,7 +930,7 @@ int top_main(int argc UNUSED_PARAM, char
+@@ -1109,7 +1109,7 @@ int top_main(int argc UNUSED_PARAM, char
  				top = xrealloc_vector(top, 6, ntop++);
  				top[n].pid = p->pid;
  				top[n].ppid = p->ppid;

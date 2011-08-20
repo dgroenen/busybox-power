@@ -1,7 +1,7 @@
 Allows compatibility with tar -m / --touch command line option
 By Yauheni Kaliuta <yauheni.kaliuta@nokia.com>
 
-Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-04-29  
+Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
 ---
 
 --- a/archival/Config.src
@@ -22,7 +22,7 @@ Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-0
  	default y
 --- a/archival/tar.c
 +++ b/archival/tar.c
-@@ -777,6 +777,7 @@ enum {
+@@ -819,6 +819,7 @@ enum {
  	IF_FEATURE_TAR_TO_COMMAND(OPTBIT_2COMMAND   ,)
  	OPTBIT_NUMERIC_OWNER,
  	OPTBIT_NOPRESERVE_PERM,
@@ -30,15 +30,15 @@ Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-0
  	OPTBIT_OVERWRITE,
  #endif
  	OPT_TEST         = 1 << 0, // t
-@@ -800,6 +801,7 @@ enum {
+@@ -842,6 +843,7 @@ enum {
  	OPT_2COMMAND        = IF_FEATURE_TAR_TO_COMMAND(  (1 << OPTBIT_2COMMAND       )) + 0, // to-command
  	OPT_NUMERIC_OWNER   = IF_FEATURE_TAR_LONG_OPTIONS((1 << OPTBIT_NUMERIC_OWNER  )) + 0, // numeric-owner
  	OPT_NOPRESERVE_PERM = IF_FEATURE_TAR_LONG_OPTIONS((1 << OPTBIT_NOPRESERVE_PERM)) + 0, // no-same-permissions
-+	OPT_TOUCH           = IF_FEATURE_TAR_TOUCH(   (1<<OPTBIT_TOUCH       )) + 0, // m
++	OPT_TOUCH           = IF_FEATURE_TAR_TOUCH(       (1 << OPTBIT_TOUCH          )) + 0, // m
  	OPT_OVERWRITE       = IF_FEATURE_TAR_LONG_OPTIONS((1 << OPTBIT_OVERWRITE      )) + 0, // overwrite
  };
  #if ENABLE_FEATURE_TAR_LONG_OPTIONS
-@@ -853,6 +855,9 @@ static const char tar_longopts[] ALIGN1 
+@@ -895,6 +897,9 @@ static const char tar_longopts[] ALIGN1
  # if ENABLE_FEATURE_TAR_FROM
  	"exclude\0"             Required_argument "\xff"
  # endif
@@ -48,7 +48,7 @@ Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-0
  	;
  #endif
  
-@@ -929,6 +934,7 @@ int tar_main(int argc UNUSED_PARAM, char
+@@ -970,6 +975,7 @@ int tar_main(int argc UNUSED_PARAM, char
  		IF_FEATURE_SEAMLESS_GZ(  "z"   )
  		IF_FEATURE_SEAMLESS_Z(   "Z"   )
  		IF_FEATURE_TAR_NOPRESERVE_TIME("m")

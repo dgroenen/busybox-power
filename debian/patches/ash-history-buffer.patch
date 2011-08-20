@@ -1,11 +1,11 @@
 Allows the user to specify a location at compile time for temporarily storing ash's history file until the shell is closed.
 NB This is only useful if ASH_HIST_BUFFER_PATH points to an in-memory filesystem.
-By Dennis Groenen <tj.groenen@gmail.com> - 2011-07-31
+By Dennis Groenen <tj.groenen@gmail.com> - 2011-08-20
 ---
 
 --- a/shell/ash.c
 +++ b/shell/ash.c
-@@ -182,6 +182,24 @@
+@@ -184,6 +184,24 @@
  //config:	  This option recreates the prompt string from the environment
  //config:	  variable each time it is displayed.
  //config:
@@ -28,9 +28,9 @@ By Dennis Groenen <tj.groenen@gmail.com> - 2011-07-31
 +//config:	  ash is exited.
 +//config:
  
- //usage:#define ash_trivial_usage NOUSAGE_STR
- //usage:#define ash_full_usage ""
-@@ -12810,6 +12828,14 @@ exitshell(void)
+ //applet:IF_ASH(APPLET(ash, BB_DIR_BIN, BB_SUID_DROP))
+ //applet:IF_FEATURE_SH_IS_ASH(APPLET_ODDNAME(sh, ash, BB_DIR_BIN, BB_SUID_DROP, sh))
+@@ -12888,6 +12906,14 @@ exitshell(void)
  	char *p;
  	int status;
  
@@ -45,10 +45,10 @@ By Dennis Groenen <tj.groenen@gmail.com> - 2011-07-31
  	status = exitstatus;
  	TRACE(("pid %d, exitshell(%d)\n", getpid(), status));
  	if (setjmp(loc.loc)) {
-@@ -13056,9 +13082,59 @@ int ash_main(int argc UNUSED_PARAM, char
- 		if (hp == NULL) {
+@@ -13151,9 +13177,59 @@ int ash_main(int argc UNUSED_PARAM, char
+ 		if (!hp) {
  			hp = lookupvar("HOME");
- 			if (hp != NULL) {
+ 			if (hp) {
 +#if ENABLE_ASH_HIST_BUFFER
 +				char *tmppath;
 +				char *tmphistory;

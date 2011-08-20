@@ -1,10 +1,10 @@
 Do not show a message when testing an uninitialized variable (busybox-1.10.2 behaviour)
-By Dennis Groenen <dennis_groenen@hotmail.com> - 2011-05-02
+By Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
 ---
 
 --- a/coreutils/test.c
 +++ b/coreutils/test.c
-@@ -413,7 +413,7 @@ static number_t getn(const char *s)
+@@ -436,7 +436,7 @@ static number_t getn(const char *s)
  	if (errno != 0)
  		syntax(s, "out of range");
  

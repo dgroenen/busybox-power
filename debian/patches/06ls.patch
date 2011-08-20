@@ -1,12 +1,12 @@
 Flush all open files after showing files
 By Yauheni Kaliuta <yauheni.kaliuta@nokia.com>
 
-Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-04-29  
+Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
 ---
 
 --- a/coreutils/ls.c
 +++ b/coreutils/ls.c
-@@ -784,6 +784,7 @@ static void showfiles(struct dnode **dn,
+@@ -701,6 +701,7 @@ static void display_files(struct dnode *
  			}
  		}
  		putchar('\n');

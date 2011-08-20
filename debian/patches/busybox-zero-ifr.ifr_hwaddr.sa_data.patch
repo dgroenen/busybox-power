@@ -1,11 +1,11 @@
 By Yauheni Kaliuta <yauheni.kaliuta@nokia.com>
 
-Ported to BusyBox 1.18.4 by Dennis Groenen <dennis_groenen@hotmail.com> - 2011-04-29  
+Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
 ---
 
 --- a/networking/interface.c
 +++ b/networking/interface.c
-@@ -622,6 +622,7 @@ static int if_fetch(struct interface *if
+@@ -621,6 +621,7 @@ static int if_fetch(struct interface *if
  
  	strncpy_IFNAMSIZ(ifr.ifr_name, ifname);
  	memset(ife->hwaddr, 0, 32);
