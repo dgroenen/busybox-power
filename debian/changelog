@@ -1,3 +1,10 @@
+busybox-power (1.19.0power1) unstable; urgency=low
+
+  * New upstream release (BusyBox 1.19.0) (fixes bug #5978)
+  * Split busybox into busybox and busybox_root (fixes bug #700)
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sat, 20 Aug 2011 16:35:35 +0200
+
 busybox-power (1.18.5power3) unstable; urgency=low
 
   * Apply workaround for bug #5317
