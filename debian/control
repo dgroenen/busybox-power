@@ -41,7 +41,8 @@ Description: Tiny utilities for small and embedded systems - enhanced package
  ar acpid add-shell addgroup adduser arp chat delgroup deluser
  dhcprelay dnsd fakeidentd ftpd hdparm httpd ifplugd inetd lspci ntpd
  rdate rdev readprofile remove-shell sendmail sha256sum sha512sum
- telnetd tftpd tunctl udhcpd watchdog zcip
+ telnetd tftpd tunctl udhcpd watchdog zcip whois pstree pwdx groups
+ users setserial nameif ubirsvol
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAGXRFWHRTb2Z0
  d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAACYtJREFUeNrUWkurZUcVXvXY
