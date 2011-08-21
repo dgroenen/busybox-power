@@ -1,0 +1,37 @@
+From 03b2e51fbe2d69823cea54e6b3ecb7db7d981879 Mon Sep 17 00:00:00 2001
+From: Dennis Groenen <tj.groenen@gmail.com>
+Date: Sun, 21 Aug 2011 13:31:41 +0200
+Subject: [PATCH] hush: don't save history when non-interactive
+
+---
+ shell/hush.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/shell/hush.c b/shell/hush.c
+index a7428d6..4ea641b 100644
+--- a/shell/hush.c
++++ b/shell/hush.c
+@@ -7832,6 +7832,7 @@ int hush_main(int argc, char **argv)
+ 				//set_local_var(xasprintf("HISTFILE=%s", ...));
+ 			}
+ 		}
++		G.line_input_state->flags &= ~SAVE_HISTORY; /* hush is non-interactive at this point */
+ # if ENABLE_FEATURE_SH_HISTFILESIZE
+ 		hp = get_local_var_value("HISTFILESIZE");
+ 		G.line_input_state->max_history = size_from_HISTFILESIZE(hp);
+@@ -8053,6 +8054,12 @@ int hush_main(int argc, char **argv)
+ 	 *    standard output is a terminal
+ 	 * Refer to Posix.2, the description of the 'sh' utility.
+ 	 */
++#if ENABLE_FEATURE_EDITING
++# if defined MAX_HISTORY && MAX_HISTORY > 0 && ENABLE_HUSH_SAVEHISTORY
++	G.line_input_state->flags |= SAVE_HISTORY;
++# endif
++#endif
++
+ #if ENABLE_HUSH_JOB
+ 	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
+ 		G_saved_tty_pgrp = tcgetpgrp(STDIN_FILENO);
+-- 
+1.7.6
+
