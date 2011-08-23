@@ -1,3 +1,9 @@
+busybox-power (1.19.0power2) unstable; urgency=low
+
+  * Enable ipv6 support in busybox_root
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Tue, 23 Aug 2011 11:37:47 +0200
+
 busybox-power (1.19.0power1) unstable; urgency=low
 
   * New upstream release (BusyBox 1.19.0) (fixes bug #5978)
