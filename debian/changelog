@@ -1,3 +1,9 @@
+busybox-power (1.19.0power3) unstable; urgency=low
+
+  * Apply BusyBox 1.19.0 hotfixes
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Thu, 25 Aug 2011 12:33:37 +0200
+
 busybox-power (1.19.0power2) unstable; urgency=low
 
   * Enable ipv6 support in busybox_root
