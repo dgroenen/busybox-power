@@ -22,9 +22,6 @@ ps-accept-and-ignore-missing-options.patch
 0001-add-support-for-delayed-history-saving.patch
 0002-hush-don-t-save-history-when-non-interactive.patch
 
-#Hotfixes for BusyBox 1.19.0
-1.19.0-hotfixes/busybox-1.19.0-cttyhack.patch
-1.19.0-hotfixes/busybox-1.19.0-less.patch
-1.19.0-hotfixes/busybox-1.19.0-sed.patch
-1.19.0-hotfixes/busybox-1.19.0-swap.patch
-1.19.0-hotfixes/busybox-1.19.0-uncompress.patch
+#Hotfixes
+hotfixes/busybox-1.19.2-crond.patch
+
