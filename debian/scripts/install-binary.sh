@@ -12,7 +12,7 @@
 # By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
 
-# Version 0.4 08-02-2011 (MM-DD-YYYY)
+# Version 0.41 09-10-2011 (MM-DD-YYYY)
 # 0.1: Initial release
 # 0.2: Use $EXECPWR to not have to rely on /bin/busybox' functions
 #      Minor clean-ups and be quieter
@@ -21,6 +21,7 @@
 #      Implement additional checks
 # 0.4: Add support for symlinking against busybox_root
 #      Update email address
+# 0.41: Minor fix in SYMLINK(), SUID symlinking part
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
@@ -192,7 +193,7 @@ SYMLINK() {
               if test $SUID == 1; then
                 if test -h $DIR/$APP # Check if the app is a symbolic link
                   then
-	            if test -n "`ls -l $DIR/$APP | grep busybox`" # Check if the symbolic link points to busybox
+	            if test -n "`$EXECPWR ls -l $DIR/$APP | $EXECPWR grep busybox`" # Check if the symbolic link points to busybox
 	              then
                         if test $VERBOSE == 1; then echo "Re-symlinking: $BUSYBOXROOT -> $DIR/$APP"; fi
                         $EXECPWR rm $DIR/$APP
