@@ -13,16 +13,18 @@ Depends: ${shlibs:Depends}
 XB-Maemo-Display-Name: Enhanced BusyBox shell
 Description: Tiny utilities for small and embedded systems - enhanced package
  BusyBox combines tiny versions of many common UNIX utilities into a
- single small executable. It is the default shell used in Maemo. This
- package overwrites the default BusyBox executable with the latest 
- upstream version. Also, this BusyBox is built with a lot more options/
- utilities enabled.
+ single small executable. It provides the default shell used in Maemo. This
+ package replaces the default BusyBox executable with the latest upstream
+ version. It also includes Maemo-specific bug fixes, a lot more utilities
+ and additional features (like Ctrl-R reverse history search, proper shell
+ history handling and swapon with priority support). 
+ .
+ Also see http://talk.maemo.org/showthread.php?t=72801.
  .
  This package won't overwrite any existing symlinks and binaries providing
  the same functionality (like GNU tar if installed/symlinked).
  .
- Extra utilities supported besides those which are already compiled in the
- default BusyBox shell:
+ Additional utilities provided over the default BusyBox package:
  bunzip2 bzcat bzip2 cpio cttyhack dnsdomainname dumpkmap ed fbset
  fdflush hush ip ipaddr iplink iproute iprule mountpoint mt nc
  pipe_progress popmaildir pscan usleep blockdev bootchartd crond
