@@ -1,3 +1,10 @@
+busybox-power (1.19.3power1) unstable; urgency=low
+
+  * New upstream release (BusyBox 1.19.3)
+  * Update debian/control file
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sat, 29 Oct 2011 17:13:24 +0200
+
 busybox-power (1.19.2power1) unstable; urgency=low
 
   * New upstream release (BusyBox 1.19.2)
