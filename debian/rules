@@ -29,7 +29,7 @@ $(STAMPS_DIR)/source:
 	cd $(DIR); QUILT_PATCHES=$(CURDIR)/debian/patches quilt --quiltrc /dev/null push -a || test $$? = 2
 	touch $@
 
-setup: $(STAMPS_DIR)/setup_busybox $(STAMPS_DIR)/setup_busybox_root
+setup: $(STAMPS_DIR)/setup_busybox
 
 $(STAMPS_DIR)/setup_%: SOURCE_DIR=$(BUILD_DIR)/source
 $(STAMPS_DIR)/setup_%: DIR=$(BUILD_DIR)/build_$*
@@ -41,7 +41,7 @@ $(STAMPS_DIR)/setup_%: $(STAMPS_DIR)/source
 	make -C '$(DIR)' oldconfig
 	touch $@
 
-build: $(STAMPS_DIR)/build_busybox $(STAMPS_DIR)/build_busybox_root
+build: $(STAMPS_DIR)/build_busybox
 
 $(STAMPS_DIR)/build_%: DIR=$(BUILD_DIR)/build_$*
 $(STAMPS_DIR)/build_%: $(STAMPS_DIR)/setup_%
@@ -63,7 +63,7 @@ clean:
 
 binary-indep:
 
-binary-arch: binary-arch_busybox binary-arch_busybox_root binary-arch_all
+binary-arch: binary-arch_busybox binary-arch_all
 
 binary-arch_busybox: DIR = $(BUILD_DIR)/build_busybox
 binary-arch_busybox: DH_OPTIONS = -pbusybox-power
@@ -75,13 +75,6 @@ binary-arch_busybox: $(STAMPS_DIR)/build_busybox
 	install -D -m755 debian/scripts/install-binary.sh debian/busybox-power/opt/busybox-power/install-binary.sh
 	install -D -m755 debian/scripts/uninstall-binary.sh debian/busybox-power/opt/busybox-power/uninstall-binary.sh
 	install -D -m755 $(DIR)/busybox_unstripped debian/busybox-power/opt/busybox-power/busybox.power
-
-binary-arch_busybox_root: DIR = $(BUILD_DIR)/build_busybox_root
-binary-arch_busybox_root: export DH_OPTIONS = -pbusybox-power
-binary-arch_busybox_root: $(STAMPS_DIR)/build_busybox_root
-	dh_testdir
-	dh_testroot
-	install -D -m755 $(DIR)/busybox_unstripped debian/busybox-power/bin/busybox_root
 
 binary-arch_all:
 	dh_installdirs

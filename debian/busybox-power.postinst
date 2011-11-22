@@ -9,6 +9,7 @@ if ! grep -F -q "$line" /etc/profile; then
   echo "$line" >> /etc/profile
 fi
 
-# Set SUID bit for /bin/busybox_root. This binary provides su, ping, etc..
-chmod u+s /bin/busybox_root
+# Set SUID bit on /bin/busybox. Privileges are automatically dropped for 
+# applets that do not require the SUID bit to be set
+chmod u+s /bin/busybox
 

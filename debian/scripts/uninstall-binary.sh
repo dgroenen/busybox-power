@@ -5,18 +5,12 @@
 # a) created by the installer script ("install-binary.sh")
 # b) not replaced by a binary (i.e. they are still a symbolic link)
 # c) pointing to a busybox binary
-
+#
 # By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
-
-# Version 0.4 08-02-2011 (MM-DD-YYYY)
-# 0.1: Initial release
-# 0.2: Minor clean-ups and be quieter
-# 0.3: Add support for multiple environments
-#      Make use of functions in this script
-#      Implement additional checks
-# 0.4: Add support for undoing symlinks to busybox_root
-#      Update email address
+#
+# Last updated: 11-22-2011 (MM-DD-YYYY)
+# 
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
@@ -157,25 +151,21 @@ UNSYMLINK() {
         eval "APPLICATIONS=\$$DESTDIR"
         # Set destination dirrectory accordingly
         case $DESTDIR in
-          *DEST_BIN)
+          DEST_BIN)
 	    DIR="/bin"
           ;;
-          *DEST_SBIN)
+          DEST_SBIN)
 	    DIR="/sbin"
           ;;
-          *DEST_USRBIN)
+          DEST_USRBIN)
 	    DIR="/usr/bin"
           ;;
-          *DEST_USRSBIN)
+          DEST_USRSBIN)
 	    DIR="/usr/sbin"
           ;;
         esac
 
-      # Determine whether we've symlinked to busybox or busybox_root
-      if test `echo $DESTDIR | cut -c1-1` == "S"
-        then SUID=1; else SUID=0; fi
-
-      if test $VERBOSE == 1; then echo -e "\nRemoving symlinks in $DIR (SUID=$SUID)"; fi
+      if test $VERBOSE == 1; then echo -e "\nRemoving symlinks in $DIR"; fi
       # Walk through all applications from the current destination
       for APP in $APPLICATIONS
         do
@@ -184,21 +174,8 @@ UNSYMLINK() {
 	    then
 	      if test -n "`ls -l $DIR/$APP | grep busybox`" # Check if the symbolic link points to busybox
 	        then
-                  if test $SUID == 0
-                    then
-                      if test $VERBOSE == 1; then echo "Removing link: $DIR/$APP"; fi
-                      rm $DIR/$APP
-                    else
-                      if test -n "`echo $RESYM | grep $APP`"
-                        then
-                          if test $VERBOSE == 1; then echo "Restoring link: /bin/busybox -> $DIR/$APP"; fi
-                          rm $DIR/$APP
-                          ln -s /bin/busybox $DIR/$APP
-                        else
-                          if test $VERBOSE == 1; then echo "Removing link: $DIR/$APP"; fi
-                          rm $DIR/$APP
-                      fi
-                  fi
+                  if test $VERBOSE == 1; then echo "Removing link: $DIR/$APP"; fi
+                  rm $DIR/$APP
 	      fi
           fi
       done
