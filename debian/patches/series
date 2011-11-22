@@ -21,6 +21,8 @@ showkey-default-option.patch
 ps-accept-and-ignore-missing-options.patch
 
 #Hotfixes
+hotfixes/busybox-1.19.3-getty.patch
+hotfixes/busybox-1.19.3-modinfo.patch
 
 #Patched pulled from busybox git
 git-backports/0001-lineedit-fix-atomic-replace-of-history-file-hush-fix.patch
