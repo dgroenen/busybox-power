@@ -1,3 +1,11 @@
+busybox-power (1.19.3power2) unstable; urgency=low
+
+  * Merge busybox and busybox_root, set SUID bit on busybox
+  * Synchronize patches with Debian Sid
+  * Apply BusyBox 1.19.3 hotfixes
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Tue, 22 Nov 2011 19:58:33 +0100
+
 busybox-power (1.19.3power1) unstable; urgency=low
 
   * New upstream release (BusyBox 1.19.3)
