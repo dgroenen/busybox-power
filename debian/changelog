@@ -1,3 +1,10 @@
+busybox-power (1.19.3power3) unstable; urgency=low
+
+  * Enable Unicode support by default
+  * Disable the SUID bit for now
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Thu, 24 Nov 2011 20:31:21 +0100
+
 busybox-power (1.19.3power2) unstable; urgency=low
 
   * Merge busybox and busybox_root, set SUID bit on busybox
