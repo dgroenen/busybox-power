@@ -11,5 +11,7 @@ fi
 
 # Set SUID bit on /bin/busybox. Privileges are automatically dropped for 
 # applets that do not require the SUID bit to be set
-chmod u+s /bin/busybox
+#chmod u+s /bin/busybox 
+# XXX - Disabled, see http://talk.maemo.org/showpost.php?p=1128548&postcount=166
+chmod u-s /bin/busybox
 
