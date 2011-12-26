@@ -8,7 +8,8 @@
 # http://talk.maemo.org/showpost.php?p=1223814&postcount=164
 
 BBVERSION="1.20.1"
-MAKETHREADS="8"
+MAKETHREADS=`grep -i 'processor.:' /proc/cpuinfo |wc -l`
+if [ -z "$MAKETHREADS" -o "$MAKETHREADS" -eq 0 ] ; then MAKETHREADS=1; fi
 SCRIPTDIR=`dirname $(readlink -f $0)`
 BUILDDIR="$SCRIPTDIR/../busybox-power-build"
 VERSION_DEBIAN=`cat $SCRIPTDIR/debian/changelog | awk -F'[()]' '{if(NR==1) print $2}'`
