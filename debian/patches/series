@@ -26,6 +26,11 @@ hotfixes/busybox-1.20.1-mke2fs.patch
 hotfixes/busybox-1.20.1-ps.patch
 hotfixes/busybox-1.20.1-tar.patch
 
+# Dark blue on black is nearly impossible to read, use red.
+# Leaving this commented out as dark blue on white is fine, and there isn't any
+# way to know which case it is.
+#ls_color_red.patch
+
 #Patched pulled from busybox git
 patches-backports/0001-backport-vi-save-restore-screen-upon-invocation.patch
 

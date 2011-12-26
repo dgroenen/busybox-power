@@ -1,0 +1,11 @@
+--- busybox-1.19.3.orig/coreutils/ls.c
++++ busybox-1.19.3/coreutils/ls.c
+@@ -395,7 +395,7 @@
+ */
+ #define COLOR(mode) ( \
+ 	/*un  fi  chr  -  dir  -  blk  -  file -  link -  sock -   -  exe */ \
+-	"\037\043\043\045\042\045\043\043\000\045\044\045\043\045\045\040" \
++	"\037\043\043\045\037\045\043\043\000\045\044\045\043\045\045\040" \
+ 	[TYPEINDEX(mode)])
+ /* Select normal (0) [actually "reset all"] or bold (1)
+  * (other attributes are 2:dim 4:underline 5:blink 7:reverse,
