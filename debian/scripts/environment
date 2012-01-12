@@ -1,0 +1,10 @@
+#
+# This file is parsed by busybox-power
+# Already set environment variables take precedence over those
+# listed in this file
+#
+# Syntax: simple "KEY=VAL" pairs on separate lines
+#
+
+TMPDIR=/var/tmp
+

@@ -75,6 +75,7 @@ binary-arch_busybox: $(STAMPS_DIR)/build_busybox
 	install -D -m755 debian/scripts/install-binary.sh debian/busybox-power/opt/busybox-power/install-binary.sh
 	install -D -m755 debian/scripts/uninstall-binary.sh debian/busybox-power/opt/busybox-power/uninstall-binary.sh
 	install -D -m755 $(DIR)/busybox_unstripped debian/busybox-power/opt/busybox-power/busybox.power
+	install -D -m600 debian/scripts/environment debian/busybox-power/etc/environment
 
 binary-arch_all:
 	dh_installdirs
