@@ -19,6 +19,7 @@ parse-complete-hostname.patch
 #New patches as per reported issues by users
 showkey-default-option.patch
 ps-accept-and-ignore-missing-options.patch
+0001-appletlib-parse-etc-environment-prior-to-applet-laun.patch
 
 #Hotfixes
 hotfixes/busybox-1.19.3-getty.patch
