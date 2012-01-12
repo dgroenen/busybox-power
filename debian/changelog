@@ -1,3 +1,11 @@
+busybox-power (1.19.3power4) unstable; urgency=low
+
+  * Parse /etc/environment prior to applet launch
+  * Update BusyBox 1.19.3 hotfixes
+  * Set SUID bit on busybox
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Thu, 12 Jan 2012 21:23:47 +0100
+
 busybox-power (1.19.3power3) unstable; urgency=low
 
   * Enable Unicode support by default
