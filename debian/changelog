@@ -1,3 +1,11 @@
+busybox-power (1.19.3power5) unstable; urgency=low
+
+  * Make df's output more compatible with Maemo's stock df
+  * Implement :p (go to previous file) in vi
+  * Update BusyBox 1.19.3 hotfixes
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Tue, 31 Jan 2012 16:50:22 +0100
+
 busybox-power (1.19.3power4) unstable; urgency=low
 
   * Parse /etc/environment prior to applet launch
