@@ -23,10 +23,6 @@ showkey-default-option.patch
 0001-vi-implement-p-go-to-previous-file.patch
 
 #Hotfixes
-hotfixes/busybox-1.19.3-getty.patch
-hotfixes/busybox-1.19.3-modinfo.patch
-hotfixes/busybox-1.19.3-wget.patch
-hotfixes/busybox-1.19.3-mdev.patch
 
 #Patched pulled from busybox git
 git-backports/0001-lineedit-fix-atomic-replace-of-history-file-hush-fix.patch
