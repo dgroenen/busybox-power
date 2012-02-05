@@ -1,5 +1,5 @@
 #Updated patches from Debian Sid; these are also in Nokia's busybox sources
-#Source: http://ftp.de.debian.org/debian/pool/main/b/busybox/busybox_1.18.4-2.debian.tar.gz
+#Source: http://ftp.de.debian.org/debian/pool/main/b/busybox/busybox_1.19.3-5.debian.tar.gz
 shell-ash-export-HOME.patch
 applets-fallback.patch
 init-console.patch
@@ -35,5 +35,4 @@ git-backports/0003-lineedit-remove-SAVE_HISTORY-bit-hist_file-can-be-us.patch
 
 #Miscellaneous
 0001-lineedit-fix-history-saving-when-history-MAX_HISTORY.patch
-
 
