@@ -1,50 +1,45 @@
 #!/bin/sh
-# A script to replace /bin/busybox and creates symlinks to new functions.
-# The default locations of busybox' functions (applets) are defined in the file $INSTALLDIR/functions
-# It keeps track of the installed symlinks by writing them to $INSTALLDIR/installed-symlinks in
-# a similiar fashion as locations are defined in the "functions" file.
+# A script to replace /bin/busybox and create missing symlinks to its applets.
 #
-# The scripts check whether symlinks/binaries of the utilities already exist, and if not,
-# it checks whether the new busybox binary supports it. If so, it creates a symlink to /bin/busybox.
+# The target directories for BusyBox' applets are defined in the "applets" file.
+# This script will only create symbolic links when 1) they do not already exist 
+# in the filesystem, and 2) the BusyBox binary supports the applet. A list of 
+# all made symbolic links is written out to the file "busybox-power.symlinks", 
+# which will be used during uninstallation of busybox-power.
 #
-# NB The busybox binary needs to support the install applet
+# NB The BusyBox binary needs to support the install applet.
 #
 # By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
 #
-# Last updated: 11-22-2011 (MM-DD-YYYY)
+# Last updated: 03-11-2012 (MM-DD-YYYY)
 # 
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
 VERBOSE="0"
 
-# Print extra information in verbose mode
-if test $VERBOSE == 1; then 
-  echo "busybox-power: verbose mode" \ 
-  echo "  binary: $EXECPWR" \ 
-  echo "  version string: `$EXECPWR | $EXECPWR head -n 1`"
-fi
+ECHO_VERBOSE() {
+	if test $VERBOSE == 1; then 
+		echo -e "$1"; fi
+}
 
 # Detect environment
 CHECK_ENV() {
-    if test -d /scratchbox
-      then
-        ENVIRONMENT="SDK"
-      else
-        PROD=$($EXECPWR cat /proc/component_version | $EXECPWR grep product | $EXECPWR cut -d" " -f 6)
-        case $PROD in
-          RX-51)
-            ENVIRONMENT="N900"
+    if test -d /scratchbox; then
+      ENVIRONMENT="SDK"
+    else
+      PROD=$($EXECPWR cat /proc/component_version | $EXECPWR grep product | $EXECPWR cut -d" " -f 6)
+      case $PROD in
+        RX-51)
+          ENVIRONMENT="N900"
           ;;
-          *)
-            # Unsupported, use the least strict environment (SDK)
-            ENVIRONMENT="SDK"
+        *)
+          # Unsupported, use the least strict environment (SDK)
+          ENVIRONMENT="SDK"
           ;;
-        esac
+      esac
     fi
-
-    if test $VERBOSE == 1; then echo "  environment: $ENVIRONMENT"; fi
 }
 
 # Environment-independent checks before continuing
@@ -57,8 +52,8 @@ GENERIC_CHECKS() {
       exit 1
     fi
 
-    if test ! -e $INSTALLDIR/functions; then
-      echo "error: cannot find list of defined functions"
+    if test ! -e $INSTALLDIR/applets; then
+      echo "error: cannot find list of defined applets"
       exit 1
     fi
 
@@ -82,113 +77,112 @@ E_N900_CHECKS() {
 
 # N900-specific code executed prior to installing the enhanced binary
 E_N900_PREINST() {
-    md5sum $INSTALLDIR/busybox.power | $EXECPWR awk '{ print $1 }' > $INSTALLDIR/busybox.power.md5
-    md5sum /bin/busybox | $EXECPWR awk '{ print $1 }' > $INSTALLDIR/busybox.original.md5
+    $EXECPWR md5sum $INSTALLDIR/busybox.power | $EXECPWR awk '{ print $1 }' \
+      > $INSTALLDIR/busybox.power.md5
+    $EXECPWR md5sum /bin/busybox | $EXECPWR awk '{ print $1 }' \
+      > $INSTALLDIR/busybox.original.md5
 
     # Check whether busybox-power isn't installed already
     INSTBINARY_MD5=`$EXECPWR cat $INSTALLDIR/busybox.power.md5`
     ORIGBINARY_MD5=`$EXECPWR cat $INSTALLDIR/busybox.original.md5`
-    if test "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"
-      then
-        echo "warning: installed busybox binary matches the binary"
-        echo "  that is to be installed"
-        if ! test -e $INSTALLDIR/busybox.original; then 
-          $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original; fi
-      else
-        $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original
+    if test "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
+      echo "warning: installed busybox binary matches the binary"
+      echo "  that is to be installed"
+      if ! test -e $INSTALLDIR/busybox.original; then 
+        $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original; fi
+    else
+      $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original
     fi
 }
 
 # SDK-specific code executed prior to installing the enhanced binary
 E_SDK_PREINST() {
-    if test -e /bin/busybox
-      then
-        $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original
-    fi
+    if test -e /bin/busybox; then
+      $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original; fi
 }
 
-# Overwrite old busybox binary with bbpower's one
+# Overwrite the installed binary with the enhanced binary
 INSTALL() {
     $EXECPWR cp -f $INSTALLDIR/busybox.power /bin/busybox
 }
 
-# Creates missing symlinks to busybox' binary
+# Creates missing symlinks to the enhanced binary
 SYMLINK() {
-    # Load defined BusyBox functions
-    source $INSTALLDIR/functions
+    # Load defined BusyBox applets
+    source $INSTALLDIR/applets
 
-    # Get a list of supported functions by busybox-power
-    if test -d /tmp/busybox-power; then $EXECPWR rm -Rf /tmp/busybox-power; fi
+    # Get a list of supported applets by busybox-power
+    if test -d /tmp/busybox-power; then 
+      $EXECPWR rm -Rf /tmp/busybox-power; fi
     $EXECPWR mkdir -p /tmp/busybox-power
-    $INSTALLDIR/busybox.power --install -s /tmp/busybox-power
-    $EXECPWR ls /tmp/busybox-power/ > $INSTALLDIR/functions_supported
+    $EXECPWR --install -s /tmp/busybox-power
+    $EXECPWR ls /tmp/busybox-power/ > $INSTALLDIR/applets_supported
     $EXECPWR rm -Rf /tmp/busybox-power
 
-    # Prepare file which keeps track of installed symlinks by busybox-power
+    # Prepare file that will keep track of installed symlinks by busybox-power
     echo "# Automatically generated by busybox-power. DO NOT EDIT" > $INSTALLDIR/busybox-power.symlinks
     echo -e "\nDESTINATIONS=\"$DESTINATIONS\"" >> $INSTALLDIR/busybox-power.symlinks
     echo -e "\n# Installed symlinks" >> $INSTALLDIR/busybox-power.symlinks
 
     # Walk through all possible destinations
-    for DESTDIR in $DESTINATIONS
-      do 
-        # Enable us to see all entries in $DESTINATION as variables
-        eval "APPLICATIONS=\$$DESTDIR"
+    for DESTDIR in $DESTINATIONS; do 
+      # Enable us to see all entries in $DESTINATION as variables
+      eval "APPLICATIONS=\$$DESTDIR"
 
-        # Set destination directory accordingly
-        case $DESTDIR in
-          DEST_BIN)
-            DIR="/bin"
+      # Set destination directory accordingly
+      case $DESTDIR in
+        DEST_BIN)
+          DIR="/bin"
           ;;
-          DEST_SBIN)
-            DIR="/sbin"
+        DEST_SBIN)
+          DIR="/sbin"
           ;;
-          DEST_USRBIN)
-            DIR="/usr/bin"
+        DEST_USRBIN)
+          DIR="/usr/bin"
           ;;
-          DEST_USRSBIN)
-            DIR="/usr/sbin"
+        DEST_USRSBIN)
+          DIR="/usr/sbin"
           ;;
-        esac
+      esac
 
       # Keep track of installed symlinks per destination
       SYMLINKS="$DESTDIR=\""
 
-      if test $VERBOSE == 1; then echo -e "\nSymlinking functions in $DIR"; fi
+      ECHO_VERBOSE "\nSymlinking applets in $DIR"
       # Walk through all applications from the current destination
-      for APP in $APPLICATIONS
-        do
-          # The following code is executed for every application in the current destination
-          if test ! -e $DIR/$APP
-            then
-              # Check whether the function is supported by the busybox binary
-              if `$EXECPWR grep -Fq "$APP" $INSTALLDIR/functions_supported` 
-                then
-                  if test $VERBOSE == 1; then echo "Symlinking: /bin/busybox -> $DIR/$APP"; fi
-                  $EXECPWR ln -s /bin/busybox $DIR/$APP
-                  SYMLINKS="$SYMLINKS $APP" 
-              fi
+      for APP in $APPLICATIONS; do
+        # The following code is executed for all applets in the current destination
+        if test ! -e $DIR/$APP; then
+          # Check whether the applet is supported by the busybox binary
+          if `$EXECPWR grep -Fq "$APP" $INSTALLDIR/applets_supported`; then
+            ECHO_VERBOSE "Symlinking: /bin/busybox -> $DIR/$APP"
+            $EXECPWR ln -s /bin/busybox $DIR/$APP
+            SYMLINKS="$SYMLINKS $APP" 
           fi
+        fi
       done
 
       # Write out installed symlinks
       echo "$SYMLINKS\"" >> $INSTALLDIR/busybox-power.symlinks
     done
 
-    $EXECPWR rm $INSTALLDIR/functions_supported
+    $EXECPWR rm $INSTALLDIR/applets_supported
 }
 
 ### Codepath ###
-CHECK_ENV
+ECHO_VERBOSE "busybox-power: verbose mode"
+ECHO_VERBOSE "  binary: $EXECPWR"
+ECHO_VERBOSE "  version string: `$EXECPWR | $EXECPWR head -n 1`"
+CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
 GENERIC_CHECKS
 case $ENVIRONMENT in
   SDK)
     E_SDK_PREINST
-  ;;
+    ;;
   N900)
     E_N900_CHECKS
     E_N900_PREINST
-  ;;
+    ;;
 esac
 INSTALL
 SYMLINK

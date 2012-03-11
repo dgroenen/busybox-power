@@ -1,5 +1,5 @@
 #
-# This file contains (ideally) all utilities supported by BusyBox sorted by
+# This file contains (ideally) all applets supported by BusyBox sorted by
 # their respective location in a standard Debian installation.
 #
 # Please send in enhancements/corrections to my e-mail adress.

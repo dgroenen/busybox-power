@@ -1,47 +1,43 @@
 #!/bin/sh
-# A script to restore /bin/busybox and delete created symlinks as defined in $INSTALLDIR/installed-symlinks
+# A script to restore /bin/busybox and delete the symlinks made during 
+# installation.
 #
-# Symbolic links are only removed if they are
-# a) created by the installer script ("install-binary.sh")
-# b) not replaced by a binary (i.e. they are still a symbolic link)
-# c) pointing to a busybox binary
+# Symbolic links to applets are only removed if they are
+# 1) created by the installer script ("install-binary.sh")
+# 2) not replaced by a binary (i.e. they are still a symbolic link)
+# 3) pointing to a busybox binary
 #
 # By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
 #
-# Last updated: 11-22-2011 (MM-DD-YYYY)
+# Last updated: 03-11-2012 (MM-DD-YYYY)
 # 
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
 VERBOSE="0"
 
-# Print extra information in verbose mode
-if test $VERBOSE == 1; then 
-  echo "busybox-power: verbose mode" \ 
-  echo "  binary: $EXECPWR" \ 
-  echo "  version string: `$EXECPWR | $EXECPWR head -n 1`"
-fi
+ECHO_VERBOSE() {
+  if test $VERBOSE == 1; then 
+    echo -e "$1"; fi
+}
 
 # Detect environment
 CHECK_ENV() {
-    if test -d /scratchbox
-      then
-        ENVIRONMENT="SDK"
-      else
-        PROD=$(cat /proc/component_version | grep product | cut -d" " -f 6)
-        case $PROD in
-          RX-51)
-            ENVIRONMENT="N900"
+    if test -d /scratchbox; then
+      ENVIRONMENT="SDK"
+    else
+      PROD=$(cat /proc/component_version | grep product | cut -d" " -f 6)
+      case $PROD in
+        RX-51)
+          ENVIRONMENT="N900"
           ;;
-          *)
-            # Unsupported, use the least strict environment (SDK)
-            ENVIRONMENT="SDK"
+        *)
+          # Unsupported, use the least strict environment (SDK)
+          ENVIRONMENT="SDK"
           ;;
-        esac
+      esac
     fi
-
-    if test $VERBOSE == 1; then echo "  environment: $ENVIRONMENT"; fi
 }
 
 # Environment-independent checks before continuing
@@ -76,145 +72,132 @@ E_N900_CHECKS() {
 
 # N900-specific code executed prior to uninstalling the enhanced binary
 E_N900_PRERM() {
-    if test -e $INSTALLDIR/busybox.power.md5
-      then
-        INSTBINARY_MD5=`md5sum /bin/busybox | awk '{ print $1 }'`
-        ORIGBINARY_MD5=`cat $INSTALLDIR/busybox.power.md5`
-        if test ! "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
-          echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid md5 checksum). The original BusyBox binary at the time of installation will replace it if you continue.\n"  >> /tmp/busybox-power-error
-        fi
+    if test -e $INSTALLDIR/busybox.power.md5; then
+      INSTBINARY_MD5=`md5sum /bin/busybox | awk '{ print $1 }'`
+      ORIGBINARY_MD5=`cat $INSTALLDIR/busybox.power.md5`
+      if test ! "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
+        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid md5 checksum). The original BusyBox binary at the time of installation will replace it if you continue.\n" >> /tmp/busybox-power-error
+      fi
     fi
 
-    if test -e $INSTALLDIR/busybox.original.md5
-      then
-        INSTBINARY_MD5=`cat $INSTALLDIR/busybox.original.md5`
-        ORIGBINARY_MD5=`md5sum $INSTALLDIR/busybox.original | awk '{ print $1 }'`
-        if test ! "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
-          echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid md5 checksum). Do not continue unless you're sure $INSTALLDIR/busybox.original isn't corrupted.\n"  >> /tmp/busybox-power-error
-        fi
-      else
-        echo -e "Warning: couldn't load the saved md5 checksum of the original binary; the integrity of the backup of the original binary can not be guaranteed.\n"  >> /tmp/busybox-power-error
+    if test -e $INSTALLDIR/busybox.original.md5; then
+      INSTBINARY_MD5=`cat $INSTALLDIR/busybox.original.md5`
+      ORIGBINARY_MD5=`md5sum $INSTALLDIR/busybox.original | awk '{ print $1 }'`
+      if test ! "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
+        echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid md5 checksum). Do not continue unless you're sure $INSTALLDIR/busybox.original isn't corrupted.\n" >> /tmp/busybox-power-error
+      fi
+    else
+      echo -e "Warning: couldn't load the saved md5 checksum of the original binary; the integrity of the backup of the original binary can not be guaranteed.\n" >> /tmp/busybox-power-error
     fi
 }
 
 # Display encountered errors
 DISPLAY_ERRORS() {
-      case $ENVIRONMENT in
-        SDK)
-          echo -e "\n\n-----------Attention!-----------"
-          cat /tmp/busybox-power-error
-          rm /tmp/busybox-power-error
-          echo "-> Please press [enter] to ignore the above errors/warnings. Hit [ctrl-c] to break"
-          read 
+    case $ENVIRONMENT in
+      SDK)
+        echo -e "\n\n-----------Attention!-----------"
+        cat /tmp/busybox-power-error
+        rm /tmp/busybox-power-error
+        echo "-> Please press [enter] to ignore the above errors/warnings."
+        echo "   Hit [ctrl-c] to break"
+        read 
         ;;
-        N900)
-          echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for help if you don't know what to do." >> /tmp/busybox-power-error
-          maemo-confirm-text "Attention!" /tmp/busybox-power-error
-          res=$?
-          rm /tmp/busybox-power-error
-          if test ! $res == 0; then exit 1; fi
+      N900)
+        echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for help if you don't know what to do." >> /tmp/busybox-power-error
+        echo "Please confirm the text on the screen of your device"
+        maemo-confirm-text "Attention!" /tmp/busybox-power-error
+        res=$?
+        rm /tmp/busybox-power-error
+        if test ! $res == 0; then exit 1; fi
         ;;
       esac
-
-      touch $INSTALLDIR/busybox-power.symlinks
 }
 
-# Uninstallation of the enhanced binary on the N900
-E_N900_UNINST() {
-    if test -e $INSTALLDIR/busybox.original 
-      then
-        cp -f $INSTALLDIR/busybox.original /bin/busybox
-        if test -e /bin/busybox; then rm $INSTALLDIR/busybox.original; fi
-    fi 
-}
-
-# Uninstallation of the enhanced binary in Maemo's SDK
-E_SDK_UNINST() {
-    if test -e $INSTALLDIR/busybox.original
-      then
-	cp -f $INSTALLDIR/busybox.original /bin/busybox
-	if test -e /bin/busybox; then rm $INSTALLDIR/busybox.original; fi
-      else
-	rm /bin/busybox
+# Uninstallation of the enhanced binary
+UNINSTALL() {
+    if test -e $INSTALLDIR/busybox.original; then
+      cp -f $INSTALLDIR/busybox.original /bin/busybox
+      if test -e /bin/busybox; then
+        rm $INSTALLDIR/busybox.original; fi
+    else
+      if test "$ENVIRONMENT" == "SDK"; then
+        # There was no /bin/busybox to begin with..
+        rm /bin/busybox
+      fi
     fi
 }
 
-# Remove all symlinks that busybox-power has made
+# Remove all symlinks that the installation script has made
 UNSYMLINK() {
     # Load list of installed symlinks
+    touch $INSTALLDIR/busybox-power.symlinks
     source $INSTALLDIR/busybox-power.symlinks
 
     # Walk through all possible destinations
-    for DESTDIR in $DESTINATIONS
-      do 
-        # Enable us to see all entries in $DESTIONATION as variables
-        eval "APPLICATIONS=\$$DESTDIR"
-        # Set destination dirrectory accordingly
-        case $DESTDIR in
-          DEST_BIN)
-	    DIR="/bin"
+    for DESTDIR in $DESTINATIONS; do 
+      # Enable us to see all entries in $DESTINATIONS as variables
+      eval "APPLICATIONS=\$$DESTDIR"
+      # Set destination directory accordingly
+      case $DESTDIR in
+        DEST_BIN)
+          DIR="/bin"
           ;;
-          DEST_SBIN)
-	    DIR="/sbin"
+        DEST_SBIN)
+          DIR="/sbin"
           ;;
-          DEST_USRBIN)
-	    DIR="/usr/bin"
+        DEST_USRBIN)
+          DIR="/usr/bin"
           ;;
-          DEST_USRSBIN)
-	    DIR="/usr/sbin"
+        DEST_USRSBIN)
+          DIR="/usr/sbin"
           ;;
-        esac
+      esac
 
-      if test $VERBOSE == 1; then echo -e "\nRemoving symlinks in $DIR"; fi
+      ECHO_VERBOSE "\nRemoving symlinks in $DIR"
       # Walk through all applications from the current destination
-      for APP in $APPLICATIONS
-        do
-          # The following code is executed for every application in the current destination
-          if test -h $DIR/$APP # Check if the app is a symbolic link
-	    then
-	      if test -n "`ls -l $DIR/$APP | grep busybox`" # Check if the symbolic link points to busybox
-	        then
-                  if test $VERBOSE == 1; then echo "Removing link: $DIR/$APP"; fi
-                  rm $DIR/$APP
-	      fi
+      for APP in $APPLICATIONS; do
+        # The following code is executed for every application in the current destination
+        if test -h $DIR/$APP; then 
+          # Good, this app is still a symbolic link ..
+          if test -n "`ls -l $DIR/$APP | grep busybox`"; then
+            ECHO_VERBOSE "Removing link: $DIR/$APP"
+            rm $DIR/$APP
           fi
+        fi
       done
     done
 }
 
 # Action to be performed after restoring original busybox
-POST_UNINST() {
+CLEANUP() {
     OLDFILES="busybox-power.symlinks
       busybox.power.md5
       busybox.original.md5"
 
-    for file in $OLDFILES
-      do
-	if test -e $INSTALLDIR/$file; then
-	  rm $INSTALLDIR/$file
-	fi
-      done
+    for file in $OLDFILES; do
+      if test -e $INSTALLDIR/$file; then
+        rm $INSTALLDIR/$file
+      fi
+    done
 }
 
 ### Codepath ###
-CHECK_ENV
+ECHO_VERBOSE "busybox-power: verbose mode"
+ECHO_VERBOSE "  binary: $EXECPWR"
+ECHO_VERBOSE "  version string: `$EXECPWR | $EXECPWR head -n 1`"
+CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
 GENERIC_CHECKS
 case $ENVIRONMENT in
-  SDK)
-    # Check for errors before restoring BusyBox
-    if test -e /tmp/busybox-power-error
-      then DISPLAY_ERRORS; fi
-    E_SDK_UNINST
-  ;;
   N900)
     E_N900_CHECKS
     E_N900_PRERM
-    # Check for errors before restoring BusyBox
-    if test -e /tmp/busybox-power-error
-      then DISPLAY_ERRORS; fi
-    E_N900_UNINST
-  ;;
+    ;;
 esac
+if test -e /tmp/busybox-power-error; then
+  # An error has occured during the checks
+  DISPLAY_ERRORS
+fi
 UNSYMLINK
-POST_UNINST
+UNINSTALL
+CLEANUP
 
