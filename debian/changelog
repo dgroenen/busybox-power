@@ -1,3 +1,12 @@
+busybox-power (1.19.4power1) unstable; urgency=low
+
+  * New upstream release (BusyBox 1.19.4)
+  * Clean up (un)installation scripts
+  * Revert the whole SUID situation (reintroduces bug #700)
+  * Support for -x (match whole line) in grep
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Tue, 10 Apr 2012 18:33:24 +0200
+
 busybox-power (1.19.3power5) unstable; urgency=low
 
   * Make df's output more compatible with Maemo's stock df
