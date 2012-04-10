@@ -28,6 +28,7 @@ showkey-default-option.patch
 git-backports/0001-lineedit-fix-atomic-replace-of-history-file-hush-fix.patch
 git-backports/0002-lineedit-add-support-for-history-saving-on-exit.patch
 git-backports/0003-lineedit-remove-SAVE_HISTORY-bit-hist_file-can-be-us.patch
+git-backports/0001-grep-support-for-x-match-whole-line.patch
 
 #Miscellaneous
 0001-lineedit-fix-history-saving-when-history-MAX_HISTORY.patch
