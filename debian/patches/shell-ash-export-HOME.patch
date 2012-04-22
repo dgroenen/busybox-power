@@ -1,6 +1,6 @@
 --- a/shell/ash.c
 +++ b/shell/ash.c
-@@ -1897,7 +1897,7 @@ static const struct {
+@@ -1904,7 +1904,7 @@ static const struct {
  	{ VSTRFIXED|VTEXTFIXED|VUNSET, "MAIL"      , changemail      },
  	{ VSTRFIXED|VTEXTFIXED|VUNSET, "MAILPATH"  , changemail      },
  #endif

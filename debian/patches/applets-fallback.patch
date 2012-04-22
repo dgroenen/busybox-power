@@ -25,13 +25,11 @@
   repeat:
  #ifdef SYSV
  	do {
-@@ -7465,24 +7450,21 @@ shellexec(char **argv, const char *path,
+@@ -7471,30 +7456,21 @@ shellexec(char **argv, const char *path,
  	int e;
  	char **envp;
  	int exerrno;
--#if ENABLE_FEATURE_SH_STANDALONE
--	int applet_no = -1;
--#endif
+-	int applet_no = -1; /* used only by FEATURE_SH_STANDALONE */
  
  	clearredir(/*drop:*/ 1);
  	envp = listvars(VEXPORT, VUNSET, /*end:*/ NULL);
@@ -41,10 +39,18 @@
 -#endif
 -	) {
 -		tryexec(IF_FEATURE_SH_STANDALONE(applet_no,) argv[0], argv, envp);
+-		if (applet_no >= 0) {
+-			/* We tried execing ourself, but it didn't work.
+-			 * Maybe /proc/self/exe doesn't exist?
+-			 * Try $PATH search.
+-			 */
+-			goto try_PATH;
+-		}
 +	if (strchr(argv[0], '/') != NULL) {
 +		tryexec(argv[0], argv, envp);
  		e = errno;
  	} else {
+- try_PATH:
 +#if ENABLE_FEATURE_SH_STANDALONE
 +		bb_execv_applet(argv[0], argv, envp);
 +#endif
@@ -151,8 +157,8 @@
  /* util-linux manpage says /sbin:/bin:/usr/sbin:/usr/bin,
   * but I want to save a few bytes here. Check libbb.h before changing! */
 --- a/include/libbb.h
-+++ b/include/libbb.h
-@@ -896,13 +896,11 @@ int exists_execable(const char *filename
++++ b/include/libbb.h	2012-04-22 19:29:26.095992610 +0200
+@@ -903,13 +903,11 @@ int exists_execable(const char *filename
   * but it may exec busybox and call applet instead of searching PATH.
   */
  #if ENABLE_FEATURE_PREFER_APPLETS
@@ -171,7 +177,7 @@
  #else
  #define BB_EXECVP(prog,cmd)     execvp(prog,cmd)
  #define BB_EXECLP(prog,cmd,...) execlp(prog,cmd,__VA_ARGS__)
-@@ -1683,6 +1681,7 @@ extern const char bb_path_wtmp_file[];
+@@ -1725,6 +1723,7 @@ extern const char bb_path_wtmp_file[];
  
  #define bb_dev_null "/dev/null"
  extern const char bb_busybox_exec_path[];
@@ -181,7 +187,7 @@
  extern const char bb_PATH_root_path[]; /* "PATH=/sbin:/usr/sbin:/bin:/usr/bin" */
 --- a/Config.in
 +++ b/Config.in
-@@ -431,13 +431,10 @@ config FEATURE_PREFER_APPLETS
+@@ -432,13 +432,10 @@ config FEATURE_PREFER_APPLETS
  
  config BUSYBOX_EXEC_PATH
  	string "Path to BusyBox executable"
@@ -199,7 +205,7 @@
  
 --- a/coreutils/chroot.c
 +++ b/coreutils/chroot.c
-@@ -41,5 +41,7 @@ int chroot_main(int argc UNUSED_PARAM, c
+@@ -40,5 +40,7 @@ int chroot_main(int argc UNUSED_PARAM, c
  		/*argv[2] = NULL; - already is */
  	}
  

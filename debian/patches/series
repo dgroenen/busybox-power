@@ -1,12 +1,12 @@
 #Updated patches from Debian Sid; these are also in Nokia's busybox sources
 #Source: http://ftp.de.debian.org/debian/pool/main/b/busybox/busybox_1.19.3-5.debian.tar.gz
+# ported to BusyBox 1.20.0
 shell-ash-export-HOME.patch
 applets-fallback.patch
 init-console.patch
 version.patch
 
 #Patches ported from Nokia's busybox sources
-03tar.patch
 05thumb.patch
 06ls.patch
 busybox-zero-ifr.ifr_hwaddr.sa_data.patch
@@ -19,15 +19,10 @@ ps-accept-and-ignore-missing-options.patch
 
 #New patches as per reported issues by users
 showkey-default-option.patch
-0001-vi-implement-p-go-to-previous-file.patch
 
 #Hotfixes
 
 #Patched pulled from busybox git
-git-backports/0001-lineedit-fix-atomic-replace-of-history-file-hush-fix.patch
-git-backports/0002-lineedit-add-support-for-history-saving-on-exit.patch
-git-backports/0003-lineedit-remove-SAVE_HISTORY-bit-hist_file-can-be-us.patch
-git-backports/0001-grep-support-for-x-match-whole-line.patch
 
 #Miscellaneous
 0001-lineedit-fix-history-saving-when-history-MAX_HISTORY.patch
