@@ -21,9 +21,11 @@ ps-accept-and-ignore-missing-options.patch
 showkey-default-option.patch
 
 #Hotfixes
+hotfixes/busybox-1.20.0-getty.patch
+hotfixes/busybox-1.20.0-lineedit.patch
+hotfixes/busybox-1.20.0-sed.patch
 
 #Patched pulled from busybox git
 
 #Miscellaneous
-0001-lineedit-fix-history-saving-when-history-MAX_HISTORY.patch
 
