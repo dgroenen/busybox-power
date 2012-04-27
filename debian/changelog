@@ -1,3 +1,10 @@
+busybox-power (1.20.0power1) unstable; urgency=low
+
+  * New upstream release (BusyBox 1.20.0)
+  * Apply BusyBox 1.20.0 hotfixes 
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Fri, 27 Apr 2012 10:56:57 +0200
+
 busybox-power (1.19.4power1) unstable; urgency=low
 
   * New upstream release (BusyBox 1.19.4)
