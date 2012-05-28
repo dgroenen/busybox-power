@@ -2,7 +2,7 @@
 # Helper script to build busybox-power
 # Please run me from within Scratchbox
 
-BBVERSION="1.20.0"
+BBVERSION="1.20.1"
 MAKETHREADS="8"
 SCRIPTDIR=`dirname $(readlink -f $0)`
 BUILDDIR="$SCRIPTDIR/../busybox-power-build"
