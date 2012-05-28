@@ -1,3 +1,9 @@
+busybox-power (1.20.1power1) unstable; urgency=low
+
+  * New upstream release (BusyBox 1.20.1)
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Mon, 28 May 2012 11:00:29 +0200
+
 busybox-power (1.20.0power1) unstable; urgency=low
 
   * New upstream release (BusyBox 1.20.0)
