@@ -1,6 +1,15 @@
+From: Bastian Blank <waldi@debian.org>
+Description: skip non-existing devices in inittab
+Bug-Debian: http://bugs.debian.org/541115
+Forwarded: no
+
+This patch causes init silently skip running processes from inittab if
+the terminal name is specified but the corresponding device file does not
+exist.
+
 --- a/init/init.c
 +++ b/init/init.c
-@@ -576,6 +576,8 @@ static void run_actions(int action_type)
+@@ -563,6 +563,8 @@ static void run_actions(int action_type)
  	for (a = init_action_list; a; a = a->next) {
  		if (!(a->action_type & action_type))
  			continue;

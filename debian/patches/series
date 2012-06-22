@@ -1,8 +1,6 @@
 #Updated patches from Debian Sid; these are also in Nokia's busybox sources
-#Source: http://ftp.de.debian.org/debian/pool/main/b/busybox/busybox_1.19.3-5.debian.tar.gz
-# ported to BusyBox 1.20.0
+#Source: http://ftp.de.debian.org/debian/pool/main/b/busybox/busybox_1.20.0-4.debian.tar.gz
 shell-ash-export-HOME.patch
-applets-fallback.patch
 init-console.patch
 version.patch
 
