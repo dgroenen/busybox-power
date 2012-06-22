@@ -19,6 +19,12 @@ ps-accept-and-ignore-missing-options.patch
 showkey-default-option.patch
 
 #Hotfixes
+hotfixes/busybox-1.20.1-ash.patch
+hotfixes/busybox-1.20.1-ifupdown.patch
+hotfixes/busybox-1.20.1-man.patch
+hotfixes/busybox-1.20.1-mke2fs.patch
+hotfixes/busybox-1.20.1-ps.patch
+hotfixes/busybox-1.20.1-tar.patch
 
 #Patched pulled from busybox git
 
