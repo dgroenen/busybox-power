@@ -27,6 +27,7 @@ hotfixes/busybox-1.20.1-ps.patch
 hotfixes/busybox-1.20.1-tar.patch
 
 #Patched pulled from busybox git
+patches-backports/0001-backport-vi-save-restore-screen-upon-invocation.patch
 
 #Miscellaneous
 
