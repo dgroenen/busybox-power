@@ -1,3 +1,11 @@
+busybox-power (1.20.1power2) unstable; urgency=low
+
+  * Synchronize patches with Debian Sid
+  * Apply BusyBox 1.20.1 hotfixes
+  * Restore screen after closing vi
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Fri, 22 Jun 2012 21:28:18 +0200
+
 busybox-power (1.20.1power1) unstable; urgency=low
 
   * New upstream release (BusyBox 1.20.1)
