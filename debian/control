@@ -9,7 +9,7 @@ Standards-Version: 3.7.3
 
 Package: busybox-power
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, kernel-feature-errata-430973-workaround
 XB-Maemo-Display-Name: Enhanced BusyBox shell
 Description: Tiny utilities for small and embedded systems - enhanced package
  BusyBox combines tiny versions of many common UNIX utilities into a
