@@ -1,38 +1,32 @@
-#Updated patches from Debian Sid; these are also in Nokia's busybox sources
-#Source: http://ftp.de.debian.org/debian/pool/main/b/busybox/busybox_1.20.0-4.debian.tar.gz
+# Updated patches from Debian Sid; these are also in Nokia's busybox sources
+# Source: http://ftp.de.debian.org/debian/pool/main/b/busybox/busybox_1.20.0-4.debian.tar.gz
 shell-ash-export-HOME.patch
 init-console.patch
 version.patch
 
-#Patches ported from Nokia's busybox sources
+# Patches ported from Nokia's busybox sources
 05thumb.patch
 06ls.patch
 busybox-zero-ifr.ifr_hwaddr.sa_data.patch
 top-display-rss.patch
 
-#New patches to bring back Maemo's old busybox behaviour
+# New patches to bring back Maemo's old busybox behaviour
 supress-bad-number.patch
 parse-complete-hostname.patch
 ps-accept-and-ignore-missing-options.patch
 
-#New patches as per reported issues by users
+# New patches as per reported issues by users
 showkey-default-option.patch
 
-#Hotfixes
-hotfixes/busybox-1.20.1-ash.patch
-hotfixes/busybox-1.20.1-ifupdown.patch
-hotfixes/busybox-1.20.1-man.patch
-hotfixes/busybox-1.20.1-mke2fs.patch
-hotfixes/busybox-1.20.1-ps.patch
-hotfixes/busybox-1.20.1-tar.patch
+# Hotfixes
 
 # Dark blue on black is nearly impossible to read, use red.
 # Leaving this commented out as dark blue on white is fine, and there isn't any
 # way to know which case it is.
 #ls_color_red.patch
 
-#Patched pulled from busybox git
+# Patched pulled from busybox git
 patches-backports/0001-backport-vi-save-restore-screen-upon-invocation.patch
 
-#Miscellaneous
+# Miscellaneous
 
