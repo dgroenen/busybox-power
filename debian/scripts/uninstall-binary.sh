@@ -10,76 +10,32 @@
 # By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
 #
-# Last updated: 03-11-2012 (MM-DD-YYYY)
+# Last updated: 08-24-2012 (MM-DD-YYYY)
 # 
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
 VERBOSE="0"
 
-ECHO_VERBOSE() {
-  if test $VERBOSE == 1; then 
-    echo -e "$1"; fi
-}
+# Load shared functions
+source $INSTALLDIR/functions
 
-# Detect environment
-CHECK_ENV() {
-    if test -d /scratchbox; then
-      ENVIRONMENT="SDK"
-    else
-      PROD=$(cat /proc/component_version | grep product | cut -d" " -f 6)
-      case $PROD in
-        RX-51)
-          ENVIRONMENT="FREMANTLE"
-          ;;
-        *)
-          # Unsupported, use the least strict environment (SDK)
-          ENVIRONMENT="SDK"
-          ;;
-      esac
-    fi
-}
-
-# Environment-independent checks before continuing
-GENERIC_CHECKS() {
-    #if test -n "`pgrep dpkg`" -o "`pgrep apt`"
-    if ! lsof /var/lib/dpkg/lock >> /dev/null; then 
-      echo "error: you're running me as a stand-alone application"
-      echo "  do not do this, I will be called automatically upon"
-      echo "  deinstallation of busybox-power"
-      exit 1
-    fi
-
+# Check whether we can load the list of created symlinks during installation
+CHECK_SYMLINKSFILE() {
     if test ! -e $INSTALLDIR/busybox-power.symlinks; then
       echo -e "Error: cannot find the list of symlinks to be removed. No symlinks will be removed at all!\n" >> /tmp/busybox-power-error
     fi
 }
 
-# Additional checks for Fremantle
-E_FREMANTLE_CHECKS() {
-    if test "`id -u`" -ne 0; then
-      echo "error: you're not running me as root, aborting"
-      echo "  also, DO NOT run me as a stand-alone application"
-      echo "  I will be called automatically upon deinstallation"
-      echo "  of busybox-power"
-      exit 1
-    fi
-
+# Check the (integrity) of our BusyBox backup
+CHECK_BACKUP() {
+    # Firstly, check whether the backup still exists
     if test ! -e $INSTALLDIR/busybox.original; then
       echo -e "Error: original binary is missing! Continuing will only remove the symlinks made during installation, /bin/busybox stays untouched.\n" >> /tmp/busybox-power-error
-    fi
-}
-
-# Fremantle-specific code executed prior to uninstalling the enhanced binary
-E_FREMANTLE_PRERM() {
-    if test -e $INSTALLDIR/busybox.power.md5; then
-      INSTBINARY_MD5=`md5sum /bin/busybox | awk '{ print $1 }'`
-      ORIGBINARY_MD5=`cat $INSTALLDIR/busybox.power.md5`
-      if test ! "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
-        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid md5 checksum). The original BusyBox binary at the time of installation will replace it if you continue.\n" >> /tmp/busybox-power-error
-      fi
+      return
     fi
 
+    # Secondly, check the integrity of the backup
     if test -e $INSTALLDIR/busybox.original.md5; then
       INSTBINARY_MD5=`cat $INSTALLDIR/busybox.original.md5`
       ORIGBINARY_MD5=`md5sum $INSTALLDIR/busybox.original | awk '{ print $1 }'`
@@ -88,6 +44,17 @@ E_FREMANTLE_PRERM() {
       fi
     else
       echo -e "Warning: couldn't load the saved md5 checksum of the original binary; the integrity of the backup of the original binary can not be guaranteed.\n" >> /tmp/busybox-power-error
+    fi
+}
+
+# Check whether /bin/busybox has been modified after bb-power's installation
+CHECK_INSTALLEDBIN() {
+    if test -e $INSTALLDIR/busybox.power.md5; then
+      INSTBINARY_MD5=`md5sum /bin/busybox | awk '{ print $1 }'`
+      ORIGBINARY_MD5=`cat $INSTALLDIR/busybox.power.md5`
+      if test ! "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
+        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid md5 checksum). The original BusyBox binary at the time of installation will replace it if you continue.\n" >> /tmp/busybox-power-error
+      fi
     fi
 }
 
@@ -186,13 +153,14 @@ ECHO_VERBOSE "busybox-power: verbose mode"
 ECHO_VERBOSE "  binary: $EXECPWR"
 ECHO_VERBOSE "  version string: `$EXECPWR | $EXECPWR head -n 1`"
 CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
-GENERIC_CHECKS
-case $ENVIRONMENT in
-  FREMANTLE)
-    E_FREMANTLE_CHECKS
-    E_FREMANTLE_PRERM
-    ;;
-esac
+
+CHECK_STANDALONE
+CHECK_SYMLINKSFILE
+if test "$ENVIRONMENT" != "SDK"; then
+  CHECK_ROOT
+  CHECK_BACKUP
+  CHECK_INSTALLEDBIN
+fi
 if test -e /tmp/busybox-power-error; then
   # An error has occured during the checks
   DISPLAY_ERRORS

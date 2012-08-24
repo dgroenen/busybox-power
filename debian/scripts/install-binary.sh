@@ -12,51 +12,26 @@
 # By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
 #
-# Last updated: 03-11-2012 (MM-DD-YYYY)
+# Last updated: 08-24-2012 (MM-DD-YYYY)
 # 
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
 VERBOSE="0"
 
-ECHO_VERBOSE() {
-	if test $VERBOSE == 1; then 
-		echo -e "$1"; fi
-}
+# Load shared functions
+source $INSTALLDIR/functions
 
-# Detect environment
-CHECK_ENV() {
-    if test -d /scratchbox; then
-      ENVIRONMENT="SDK"
-    else
-      PROD=$($EXECPWR cat /proc/component_version | $EXECPWR grep product | $EXECPWR cut -d" " -f 6)
-      case $PROD in
-        RX-51)
-          ENVIRONMENT="FREMANTLE"
-          ;;
-        *)
-          # Unsupported, use the least strict environment (SDK)
-          ENVIRONMENT="SDK"
-          ;;
-      esac
-    fi
-}
-
-# Environment-independent checks before continuing
-GENERIC_CHECKS() {
-    #if test -n "`pgrep dpkg`" -o "`pgrep apt`"
-    if ! lsof /var/lib/dpkg/lock >> /dev/null; then 
-      echo "error: you're running me as a stand-alone application"
-      echo "  do not do this, I will be called automatically upon"
-      echo "  installation of busybox-power"
-      exit 1
-    fi
-
+# Check whether the applets file exists
+CHECK_APPLETSFILE() {
     if test ! -e $INSTALLDIR/applets; then
       echo "error: cannot find list of defined applets"
       exit 1
     fi
+}
 
+# Check whether symlinks have been made before
+CHECK_SYMLINKSFILE() {
     if test -e $INSTALLDIR/busybox-power.symlinks; then
       echo "error: symlinks already seem to be made?"
       echo "  this script is not supposed to be ran twice"
@@ -64,41 +39,36 @@ GENERIC_CHECKS() {
     fi
 }
 
-# Additional checks for Fremantle
-E_FREMANTLE_CHECKS() {
-    if test "`$EXECPWR id -u`" -ne 0; then
-      echo "error: you're not running me as root, aborting"
-      echo "  also, DO NOT run me as a stand-alone application"
-      echo "  I will be called automatically upon installation"
-      echo "  of busybox-power"
-      exit 1
-    fi
-}
-
-# Fremantle-specific code executed prior to installing the enhanced binary
-E_FREMANTLE_PREINST() {
+# Create MD5 hashes of relevant binaries
+HASH_BINARIES() {
     $EXECPWR md5sum $INSTALLDIR/busybox.power | $EXECPWR awk '{ print $1 }' \
       > $INSTALLDIR/busybox.power.md5
     $EXECPWR md5sum /bin/busybox | $EXECPWR awk '{ print $1 }' \
       > $INSTALLDIR/busybox.original.md5
-
-    # Check whether busybox-power isn't installed already
-    INSTBINARY_MD5=`$EXECPWR cat $INSTALLDIR/busybox.power.md5`
-    ORIGBINARY_MD5=`$EXECPWR cat $INSTALLDIR/busybox.original.md5`
-    if test "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
-      echo "warning: installed busybox binary matches the binary"
-      echo "  that is to be installed"
-      if ! test -e $INSTALLDIR/busybox.original; then 
-        $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original; fi
-    else
-      $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original
-    fi
 }
 
-# SDK-specific code executed prior to installing the enhanced binary
-E_SDK_PREINST() {
-    if test -e /bin/busybox; then
-      $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original; fi
+# Backup the original BusyBox binary
+BACKUP() {
+    case $ENVIRONMENT in
+      SDK)
+        # Scratchbox does not ship with BusyBox by default
+        if test -e /bin/busybox; then
+          $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original; fi
+        ;;
+      FREMANTLE)
+        # Check whether busybox-power isn't somehow installed already
+        INSTBINARY_MD5=`$EXECPWR cat $INSTALLDIR/busybox.power.md5`
+        ORIGBINARY_MD5=`$EXECPWR cat $INSTALLDIR/busybox.original.md5`
+        if test "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
+          echo "warning: installed busybox binary matches the binary"
+          echo "  that is to be installed"
+          if ! test -e $INSTALLDIR/busybox.original; then 
+            $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original; fi
+        else
+          $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original
+        fi
+        ;;
+    esac
 }
 
 # Overwrite the installed binary with the enhanced binary
@@ -106,7 +76,7 @@ INSTALL() {
     $EXECPWR cp -f $INSTALLDIR/busybox.power /bin/busybox
 }
 
-# Creates missing symlinks to the enhanced binary
+# Create missing symlinks to the enhanced binary
 SYMLINK() {
     # Load defined BusyBox applets
     source $INSTALLDIR/applets
@@ -174,16 +144,15 @@ ECHO_VERBOSE "busybox-power: verbose mode"
 ECHO_VERBOSE "  binary: $EXECPWR"
 ECHO_VERBOSE "  version string: `$EXECPWR | $EXECPWR head -n 1`"
 CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
-GENERIC_CHECKS
-case $ENVIRONMENT in
-  SDK)
-    E_SDK_PREINST
-    ;;
-  FREMANTLE)
-    E_FREMANTLE_CHECKS
-    E_FREMANTLE_PREINST
-    ;;
-esac
+
+CHECK_STANDALONE
+CHECK_APPLETSFILE
+CHECK_SYMLINKSFILE
+if test "$ENVIRONMENT" != "SDK"; then
+  CHECK_ROOT
+  HASH_BINARIES
+fi
+BACKUP
 INSTALL
 SYMLINK
 

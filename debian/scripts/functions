@@ -1,0 +1,56 @@
+#!/bin/sh
+# This file contains functions that are used in multiple other scripts, i.e.
+# shared functions. The purpose of centralising these, is to deduplicate code
+# and increase maintainability
+#
+# By Dennis Groenen <tj.groenen@gmail.com>
+# GPLv3 licensed
+#
+# Last updated: 08-24-2012 (MM-DD-YYYY)
+# 
+
+# Verbose-aware echo
+ECHO_VERBOSE() {
+  if test $VERBOSE == 1; then 
+    echo -e "$1"; fi
+}
+
+# Detect the current environment
+CHECK_ENV() {
+    if test -d /scratchbox; then
+      ENVIRONMENT="SDK"
+    else
+      PROD=$($EXECPWR cat /proc/component_version | $EXECPWR grep product | $EXECPWR cut -d" " -f 6)
+      case $PROD in
+        RX-51)
+          ENVIRONMENT="FREMANTLE"
+          ;;
+        *)
+          # Unsupported, use the least strict environment (SDK)
+          ENVIRONMENT="SDK"
+          ;;
+      esac
+    fi
+}
+
+# Check whether I'm running standalone
+CHECK_STANDALONE() {
+    #if test -n "`pgrep dpkg`" -o "`pgrep apt`"
+    if ! lsof /var/lib/dpkg/lock >> /dev/null; then 
+      echo "error: you're running me as a stand-alone application"
+      echo "  do not do this, I will be called automatically when"
+      echo "  required by busybox-power"
+      exit 1
+    fi
+}
+
+# Check whether the user is root
+CHECK_ROOT() {
+    if test "`$EXECPWR id -u`" -ne 0; then
+      echo "error: you're not running me as root, aborting"
+      echo "  also, DO NOT run me as a stand-alone application"
+      echo "  I will be called automatically when required by"
+      echo "  busybox-power"
+      exit 1
+    fi
+}
