@@ -30,7 +30,7 @@ CHECK_ENV() {
       PROD=$(cat /proc/component_version | grep product | cut -d" " -f 6)
       case $PROD in
         RX-51)
-          ENVIRONMENT="N900"
+          ENVIRONMENT="FREMANTLE"
           ;;
         *)
           # Unsupported, use the least strict environment (SDK)
@@ -55,8 +55,8 @@ GENERIC_CHECKS() {
     fi
 }
 
-# Additional checks for the N900
-E_N900_CHECKS() {
+# Additional checks for Fremantle
+E_FREMANTLE_CHECKS() {
     if test "`id -u`" -ne 0; then
       echo "error: you're not running me as root, aborting"
       echo "  also, DO NOT run me as a stand-alone application"
@@ -70,8 +70,8 @@ E_N900_CHECKS() {
     fi
 }
 
-# N900-specific code executed prior to uninstalling the enhanced binary
-E_N900_PRERM() {
+# Fremantle-specific code executed prior to uninstalling the enhanced binary
+E_FREMANTLE_PRERM() {
     if test -e $INSTALLDIR/busybox.power.md5; then
       INSTBINARY_MD5=`md5sum /bin/busybox | awk '{ print $1 }'`
       ORIGBINARY_MD5=`cat $INSTALLDIR/busybox.power.md5`
@@ -102,7 +102,7 @@ DISPLAY_ERRORS() {
         echo "   Hit [ctrl-c] to break"
         read 
         ;;
-      N900)
+      FREMANTLE)
         echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for help if you don't know what to do." >> /tmp/busybox-power-error
         echo "Please confirm the text on the screen of your device"
         maemo-confirm-text "Attention!" /tmp/busybox-power-error
@@ -188,9 +188,9 @@ ECHO_VERBOSE "  version string: `$EXECPWR | $EXECPWR head -n 1`"
 CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
 GENERIC_CHECKS
 case $ENVIRONMENT in
-  N900)
-    E_N900_CHECKS
-    E_N900_PRERM
+  FREMANTLE)
+    E_FREMANTLE_CHECKS
+    E_FREMANTLE_PRERM
     ;;
 esac
 if test -e /tmp/busybox-power-error; then

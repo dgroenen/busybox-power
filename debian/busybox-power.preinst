@@ -12,7 +12,7 @@ else
   case $PROD in
     RX-51)
       echo "busybox-power: Maemo (N900) environment detected"
-      ENVIRONMENT="N900"
+      ENVIRONMENT="FREMANTLE"
       ;;
     *)
       # Unsupported, use the least strict environment (SDK)
@@ -27,7 +27,7 @@ case $ENVIRONMENT in
     # Extra warning doesn't apply to SDK, just exit
     exit 0
     ;;
-  N900)
+  FREMANTLE)
     f=/tmp/busybox-power-msg
     cat > $f <<EOF
 Warning: This package touches an essential system binary!

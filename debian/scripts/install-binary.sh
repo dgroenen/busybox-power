@@ -32,7 +32,7 @@ CHECK_ENV() {
       PROD=$($EXECPWR cat /proc/component_version | $EXECPWR grep product | $EXECPWR cut -d" " -f 6)
       case $PROD in
         RX-51)
-          ENVIRONMENT="N900"
+          ENVIRONMENT="FREMANTLE"
           ;;
         *)
           # Unsupported, use the least strict environment (SDK)
@@ -64,8 +64,8 @@ GENERIC_CHECKS() {
     fi
 }
 
-# Additional checks for the N900
-E_N900_CHECKS() {
+# Additional checks for Fremantle
+E_FREMANTLE_CHECKS() {
     if test "`$EXECPWR id -u`" -ne 0; then
       echo "error: you're not running me as root, aborting"
       echo "  also, DO NOT run me as a stand-alone application"
@@ -75,8 +75,8 @@ E_N900_CHECKS() {
     fi
 }
 
-# N900-specific code executed prior to installing the enhanced binary
-E_N900_PREINST() {
+# Fremantle-specific code executed prior to installing the enhanced binary
+E_FREMANTLE_PREINST() {
     $EXECPWR md5sum $INSTALLDIR/busybox.power | $EXECPWR awk '{ print $1 }' \
       > $INSTALLDIR/busybox.power.md5
     $EXECPWR md5sum /bin/busybox | $EXECPWR awk '{ print $1 }' \
@@ -179,9 +179,9 @@ case $ENVIRONMENT in
   SDK)
     E_SDK_PREINST
     ;;
-  N900)
-    E_N900_CHECKS
-    E_N900_PREINST
+  FREMANTLE)
+    E_FREMANTLE_CHECKS
+    E_FREMANTLE_PREINST
     ;;
 esac
 INSTALL
