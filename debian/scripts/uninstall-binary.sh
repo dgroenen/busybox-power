@@ -16,6 +16,7 @@
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
 VERBOSE="0"
+MODIFIEDBIN="0"
 
 # Load shared functions
 source $INSTALLDIR/functions
@@ -53,7 +54,8 @@ CHECK_INSTALLEDBIN() {
       INSTBINARY_MD5=`md5sum /bin/busybox | awk '{ print $1 }'`
       ORIGBINARY_MD5=`cat $INSTALLDIR/busybox.power.md5`
       if test ! "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
-        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid md5 checksum). The original BusyBox binary at the time of installation will replace it if you continue.\n" >> /tmp/busybox-power-error
+        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid md5 checksum). This can be the result of a busybox upgrade, e.g. from CSSU. Your current /bin/busybox won't be touched, our backup of the original /bin/busybox will be copied to /opt/busybox.original. \n" >> /tmp/busybox-power-error
+        MODIFIEDBIN="1"
       fi
     fi
 }
@@ -82,6 +84,12 @@ DISPLAY_ERRORS() {
 
 # Uninstallation of the enhanced binary
 UNINSTALL() {
+    if test $MODIFIEDBIN == 1; then
+      # /bin/busybox has been modified since installing busybox-power
+      # Do not overwrite this modified version with our backup
+      mv $INSTALLDIR/busybox.original /opt/busybox.original
+      return
+    fi
     if test -e $INSTALLDIR/busybox.original; then
       cp -f $INSTALLDIR/busybox.original /bin/busybox
       if test -e /bin/busybox; then
