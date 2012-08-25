@@ -10,6 +10,9 @@ version.patch
 busybox-zero-ifr.ifr_hwaddr.sa_data.patch
 top-display-rss.patch
 
+# Patches from CSSU
+cssu/busybox-portrait.patch
+
 # New patches to bring back Maemo's old busybox behaviour
 supress-bad-number.patch
 parse-complete-hostname.patch
