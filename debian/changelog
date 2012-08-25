@@ -1,3 +1,17 @@
+busybox-power (1.20.2power1) unstable; urgency=low
+
+  * New upstream release (BusyBox 1.20.2)
+  * Apply BusyBox 1.20.2 hotfixes
+  * Portrait mode support by Pali Rohár (CSSU patch)
+  * Increase shell history size to 255
+  * Enable username completion in shell
+  * Disable the use of internal (shadow) password and group functions
+  * Restructure internal (un)installation scripts
+  * Use platform names instead of device names in internal scripts
+  * Don't restore backup binary if /bin/busybox has been modified
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sat, 25 Aug 2012 11:57:55 +0200
+
 busybox-power (1.20.1power2) unstable; urgency=low
 
   * Synchronize patches with Debian Sid
