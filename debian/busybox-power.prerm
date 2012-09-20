@@ -3,6 +3,10 @@ set -e
 
 sh /opt/busybox-power/uninstall-binary.sh
 
+# Clean up trap (from busybox-power <= 1.20.2power1)
+# Should be removed by the old prerm, but may be left behind when that one fails
+# and dpkg uses this one instead. Therefore, keep this cleanup included for a 
+# few busybox-power releases.
 line="trap exit SIGHUP #by busybox-power"
 if grep -F -q "$line" /etc/profile; then
   sed "/$line/d" /etc/profile > /tmp/profile.sed

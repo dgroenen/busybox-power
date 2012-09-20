@@ -3,12 +3,6 @@ set -e
 
 /opt/busybox-power/busybox.power sh /opt/busybox-power/install-binary.sh
 
-# Workaround for bug 5317
-line="trap exit SIGHUP #by busybox-power"
-if ! grep -F -q "$line" /etc/profile; then
-  echo "$line" >> /etc/profile
-fi
-
 # Clean up conffile (from busybox-power 1.19.3power4 & 1.19.3power5)
 if test -e /etc/environment; then
   ORIGCONFIG_MD5="d23caa13476e0d872d23e7290b52f544"
