@@ -1,0 +1,59 @@
+From aa7f6b1162807f867524ec38a56a32107b493ed7 Mon Sep 17 00:00:00 2001
+From: Dennis Groenen <tj.groenen@gmail.com>
+Date: Sat, 22 Sep 2012 11:22:11 +0200
+Subject: [PATCH 1/2] pgrep: check whether we're pkill at runtime
+
+If we want to call pgrep_main() from other applets, pkill or pgrep will be left
+undefined. Check whether we're called as pkill or pgrep at runtime instead of
+using the preprocessor.
+---
+ procps/pgrep.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/procps/pgrep.c b/procps/pgrep.c
+index dc7ffff..2d5b221 100644
+--- a/procps/pgrep.c
++++ b/procps/pgrep.c
+@@ -36,9 +36,8 @@
+ #include "libbb.h"
+ #include "xregex.h"
+ 
+-/* Idea taken from kill.c */
+-#define pgrep (ENABLE_PGREP && applet_name[1] == 'g')
+-#define pkill (ENABLE_PKILL && applet_name[1] == 'k')
++/* Are we pgrep or pkill? */
++unsigned short pkill;
+ 
+ enum {
+ 	/* "vlfxons:P:" */
+@@ -63,13 +62,14 @@ enum {
+ 
+ static void act(unsigned pid, char *cmd, int signo)
+ {
+-	if (pgrep) {
++	if (pkill) {
++		kill(pid, signo);
++	} else {
+ 		if (option_mask32 & (1 << OPTBIT_L)) /* OPT_LIST */
+ 			printf("%d %s\n", pid, cmd);
+ 		else
+ 			printf("%d\n", pid);
+-	} else
+-		kill(pid, signo);
++	}
+ }
+ 
+ int pgrep_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
+@@ -93,6 +93,9 @@ int pgrep_main(int argc UNUSED_PARAM, char **argv)
+ 
+ 	memset(&Z, 0, sizeof(Z));
+ 
++	/* Are we called as pkill? */
++	pkill = argv[0][1] == 'k' ? 1 : 0;
++
+ 	/* Parse -SIGNAL for pkill. Must be first option, if present */
+ 	signo = SIGTERM;
+ 	if (pkill && argv[1] && argv[1][0] == '-') {
+-- 
+1.7.12
+
