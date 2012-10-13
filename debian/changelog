@@ -1,3 +1,17 @@
+busybox-power (1.20.2power3) unstable; urgency=low
+
+  * Exit shell cleanly upon receiving SIGHUP
+  * Re-enable writing out shell history on exit
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sat, 13 Oct 2012 13:18:27 +0200
+
+busybox-power (1.20.2power2) unstable; urgency=low
+
+  * Disable writing out shell history on exit
+  * Remove workaround for bug #5317, not required anymore
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Wed, 19 Sep 2012 23:39:03 +0200
+
 busybox-power (1.20.2power1-thumb0) unstable; urgency=low
 
   * Enable thumb compilation
