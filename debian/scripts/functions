@@ -18,10 +18,18 @@ CHECK_ENV() {
     if test -d /scratchbox; then
       ENVIRONMENT="SDK"
     else
-      PROD=$($EXECPWR cat /proc/component_version | $EXECPWR grep product | $EXECPWR cut -d" " -f 6)
+      if test -e /proc/component_version; then
+        PROD=$($EXECPWR cat /proc/component_version | $EXECPWR grep product | $EXECPWR cut -d" " -f 6)
+      else
+        PROD=$(/usr/bin/sysinfoclient --get /component/product | $EXECPWR awk '{ print $3 }')
+      fi
+
       case $PROD in
         RX-51)
           ENVIRONMENT="FREMANTLE"
+          ;;
+        RM-680|RM-696)
+          ENVIRONMENT="HARMATTAN"
           ;;
         *)
           # Unsupported, use the least strict environment (SDK)

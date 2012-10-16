@@ -3,21 +3,28 @@
 test "$1" = install || exit 0 # upgrades are fine
 
 # Detect environment
-#if test ! -e /proc/component_version
 if test -d /scratchbox; then
   echo "busybox-power: Scratchbox environment detected"
   ENVIRONMENT="SDK"
 else
-  PROD=$(cat /proc/component_version | grep product | cut -d" " -f 6)
+  if test -e /proc/component_version; then
+    PROD=$(cat /proc/component_version | grep product | cut -d" " -f 6)
+  else
+    PROD=$(/usr/bin/sysinfoclient --get /component/product | awk '{ print $3 }')
+  fi
+
   case $PROD in
     RX-51)
       echo "busybox-power: Maemo (N900) environment detected"
       ENVIRONMENT="FREMANTLE"
       ;;
+    RM-680|RM-696)
+      echo "busybox-power: MeeGo/Harmattan (N9/50) environment detected"
+      ENVIRONMENT="HARMATTAN"
+      ;;
     *)
-      # Unsupported, use the least strict environment (SDK)
-      echo "busybox-power: unsupported environment, using SDK codepath.."
-      ENVIRONMENT="SDK"
+      echo "busybox-power: unsupported environment: $PROD"
+      exit 1
       ;;
   esac
 fi
@@ -38,6 +45,27 @@ bin/busybox
 EOF
     echo "Please confirm the text on the screen of your device"
     maemo-confirm-text "Installation notes" $f
+    res=$?
+    rm -f $f
+    exit $res
+    ;;
+  HARMATTAN)
+    f=/tmp/busybox-power-msg
+    cat > $f <<EOF
+This is a public testing release of busybox-power for Harmattan. USE AT YOUR OWN RISK.
+Do note that even though the installation should roll-back all its changes upon the slightest error during installation, there might still be bugs in this mechanism.
+
+This warning will eventually be replaced with busybox-power's usual warning as found below.
+
+-------
+Warning: This package touches an essential system binary!
+Even though installation should be safe, a reflash might be required if something does go wrong (i.e. worst-case scenario).
+
+Files overwritten by this package:
+bin/busybox
+EOF
+    echo "Please confirm the text on the screen of your device"
+    meego-confirm-text "Installation notes" $f > /dev/null 2>&1
     res=$?
     rm -f $f
     exit $res
