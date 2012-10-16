@@ -17,6 +17,9 @@ INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
 VERBOSE="0"
 
+INSTBINARY_SHA1=`$EXECPWR sha1sum $EXECPWR | $EXECPWR awk '{ print $1 }'`
+ORIGBINARY_SHA1=`$EXECPWR sha1sum /bin/busybox | $EXECPWR awk '{ print $1 }'`
+
 # Load shared functions
 source $INSTALLDIR/functions
 
@@ -37,42 +40,24 @@ CHECK_SYMLINKSFILE() {
     fi
 }
 
-# Create SHA1 hashes of relevant binaries
-HASH_BINARIES() {
-    $EXECPWR sha1sum $INSTALLDIR/busybox.power | $EXECPWR awk '{ print $1 }' \
-      > $INSTALLDIR/busybox.power.sha1
-    $EXECPWR sha1sum /bin/busybox | $EXECPWR awk '{ print $1 }' \
-      > $INSTALLDIR/busybox.original.sha1
-}
-
 # Backup the original BusyBox binary
 BACKUP() {
-    case $ENVIRONMENT in
-      SDK)
-        # Scratchbox does not ship with BusyBox by default
-        if test -e /bin/busybox; then
-          $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original; fi
-        ;;
-      FREMANTLE)
-        # Check whether busybox-power isn't somehow installed already
-        INSTBINARY_SHA1=`$EXECPWR cat $INSTALLDIR/busybox.power.sha1`
-        ORIGBINARY_SHA1=`$EXECPWR cat $INSTALLDIR/busybox.original.sha1`
-        if test "$INSTBINARY_SHA1" == "$ORIGBINARY_SHA1"; then
-          echo "warning: installed busybox binary matches the binary"
-          echo "  that is to be installed"
-          if ! test -e $INSTALLDIR/busybox.original; then 
-            $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original; fi
-        else
-          $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original
-        fi
-        ;;
-    esac
+    if test ! -e /bin/busybox; then
+      # Scratchbox does not ship with BusyBox by default
+      return
+    fi
+
+    if ! test "$INSTBINARY_SHA1" == "$ORIGBINARY_SHA1"; then
+      $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original
+      $EXECPWR sha1sum $INSTALLDIR/busybox.original | $EXECPWR awk '{ print $1 }' \
+        > $INSTALLDIR/busybox.original.sha1
+    fi
 }
 
 # Overwrite the installed binary with the enhanced binary
 INSTALL() {
     /usr/sbin/dpkg-divert --local --divert /bin/busybox.distrib /bin/busybox
-    $EXECPWR cp -f $INSTALLDIR/busybox.power /bin/busybox
+    $EXECPWR cp -f $EXECPWR /bin/busybox
 }
 
 # Create missing symlinks to the enhanced binary
@@ -148,9 +133,7 @@ CHECK_STANDALONE
 CHECK_APPLETSFILE
 CHECK_SYMLINKSFILE
 if test "$ENVIRONMENT" != "SDK"; then
-  CHECK_ROOT
-  HASH_BINARIES
-fi
+  CHECK_ROOT; fi
 BACKUP
 INSTALL
 SYMLINK

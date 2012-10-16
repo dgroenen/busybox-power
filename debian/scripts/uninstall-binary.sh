@@ -17,6 +17,10 @@ VERBOSE="0"
 MODIFIEDBIN="0"
 DIVERTED="0"
 
+INSTBINARY_SHA1=`sha1sum $EXECPWR | awk '{ print $1 }'`
+if test -e $INSTALLDIR/busybox.original; then
+  ORIGBINARY_SHA1=`sha1sum $INSTALLDIR/busybox.original | awk '{ print $1 }'`; fi
+
 # Load shared functions
 source $INSTALLDIR/functions
 
@@ -35,6 +39,10 @@ CHECK_DIVERT() {
 
 # Check the (integrity) of our BusyBox backup
 CHECK_BACKUP() {
+    # SDK doesn't ship with BusyBox by default, there might be no backup at all
+    if test ! -e $INSTALLDIR/busybox.original -a "$ENVIRONMENT" == "SDK" ; then
+      return; fi
+
     # Firstly, check whether the backup still exists
     if test ! -e $INSTALLDIR/busybox.original; then
       echo -e "Error: original binary is missing! Continuing will only remove the symlinks made during installation, /bin/busybox stays untouched.\n" >> /tmp/busybox-power-error
@@ -43,9 +51,7 @@ CHECK_BACKUP() {
 
     # Secondly, check the integrity of the backup
     if test -e $INSTALLDIR/busybox.original.sha1; then
-      INSTBINARY_SHA1=`cat $INSTALLDIR/busybox.original.sha1`
-      ORIGBINARY_SHA1=`sha1sum $INSTALLDIR/busybox.original | awk '{ print $1 }'`
-      if test ! "$INSTBINARY_SHA1" == "$ORIGBINARY_SHA1"; then
+      if test ! "`cat $INSTALLDIR/busybox.original.sha1`" == "$ORIGBINARY_SHA1"; then
         echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid SHA1 checksum). Do not continue unless you're sure $INSTALLDIR/busybox.original isn't corrupted.\n" >> /tmp/busybox-power-error
       fi
     else
@@ -55,13 +61,9 @@ CHECK_BACKUP() {
 
 # Check whether /bin/busybox has been modified after bb-power's installation
 CHECK_INSTALLEDBIN() {
-    if test -e $INSTALLDIR/busybox.power.sha1; then
-      INSTBINARY_SHA1=`sha1sum /bin/busybox | awk '{ print $1 }'`
-      ORIGBINARY_SHA1=`cat $INSTALLDIR/busybox.power.sha1`
-      if test ! "$INSTBINARY_SHA1" == "$ORIGBINARY_SHA1"; then
-        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid SHA1 checksum). Your current /bin/busybox won't be touched, our backup of the original /bin/busybox will be copied to /opt/busybox.original. \n" >> /tmp/busybox-power-error
-        MODIFIEDBIN="1"
-      fi
+    if test ! "$INSTBINARY_SHA1" == "`sha1sum /bin/busybox | awk '{ print $1 }'`"; then
+      echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid SHA1 checksum). Your current /bin/busybox won't be touched, our backup of the original /bin/busybox will be copied to /opt/busybox.original. \n" >> /tmp/busybox-power-error
+      MODIFIEDBIN="1"
     fi
 }
 
@@ -154,7 +156,6 @@ UNSYMLINK() {
 # Action to be performed after restoring original busybox
 CLEANUP() {
     OLDFILES="busybox-power.symlinks
-      busybox.power.sha1
       busybox.original.sha1"
 
     for file in $OLDFILES; do
