@@ -42,5 +42,5 @@ CHECK_ROOT() {
 # Get the version string of the package providing /bin/busybox
 GETBBVERSION() {
     # XXX We assume the package "busybox" provides /bin/busybox
-    /usr/bin/dpkg -s busybox | awk '/^Version:/ {print $2}'
+    /usr/bin/dpkg -s busybox | $EXECPWR awk '/^Version:/ {print $2}'
 }
