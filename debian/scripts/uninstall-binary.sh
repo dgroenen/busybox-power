@@ -46,7 +46,10 @@ CHECK_BACKUP() {
     # Secondly, check the integrity of the backup
     if test -e $INSTALLDIR/busybox.distrib.sha1; then
       if test ! "`cat $INSTALLDIR/busybox.distrib.sha1`" == "$ORIGBINARY_SHA1"; then
-        echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid SHA1 checksum). Do not continue unless you're sure $DISTBIN isn't corrupted.\n" >> /tmp/busybox-power-error
+        if test "`cat $INSTALLDIR/busybox.distrib.version`" == "`GETBBVERSION`"; then
+          # The backup has been changed whilst busybox hasn't been upgraded
+          echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid SHA1 checksum). Do not continue unless you're sure $DISTBIN isn't corrupted.\n" >> /tmp/busybox-power-error
+        fi
       fi
     else
       echo -e "Warning: couldn't load the saved SHA1 checksum of the original binary; the integrity of the backup of the original binary can not be guaranteed.\n" >> /tmp/busybox-power-error
@@ -145,6 +148,7 @@ UNSYMLINK() {
 # Action to be performed after restoring original busybox
 CLEANUP() {
     OLDFILES="busybox-power.symlinks
+      busybox.distrib.version
       busybox.distrib.sha1"
 
     for file in $OLDFILES; do

@@ -52,6 +52,7 @@ BACKUP() {
       $EXECPWR cp -a /bin/busybox $DISTBIN
       $EXECPWR sha1sum $DISTBIN | $EXECPWR awk '{ print $1 }' \
         > $INSTALLDIR/busybox.distrib.sha1
+      GETBBVERSION > $INSTALLDIR/busybox.distrib.version
     fi
 }
 
