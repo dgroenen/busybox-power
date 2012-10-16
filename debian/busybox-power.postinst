@@ -18,6 +18,7 @@ EXECPWR="$INSTALLDIR/busybox.power"
 DISTBIN="/bin/busybox.distrib"
 
 VERBOSE="0"
+SYMLINK="1"
 
 INSTBINARY_SHA1=`$EXECPWR sha1sum $EXECPWR | $EXECPWR awk '{ print $1 }'`
 ORIGBINARY_SHA1=`$EXECPWR sha1sum /bin/busybox | $EXECPWR awk '{ print $1 }'`
@@ -36,9 +37,8 @@ CHECK_APPLETSFILE() {
 # Check whether symlinks have been made before
 CHECK_SYMLINKSFILE() {
     if test -e $INSTALLDIR/busybox-power.symlinks; then
-      echo "error: symlinks already seem to be made?"
-      echo "  this script is not supposed to be ran twice"
-      exit 1
+      ECHO_VERBOSE "symlinks are already made, skipping creation"
+      SYMLINK="0"
     fi
 }
 
@@ -132,12 +132,14 @@ ECHO_VERBOSE "  binary: $EXECPWR"
 ECHO_VERBOSE "  version string: `$EXECPWR | $EXECPWR head -n 1`"
 CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
 
-CHECK_STANDALONE
 CHECK_APPLETSFILE
 CHECK_SYMLINKSFILE
 if test "$ENVIRONMENT" != "SDK"; then
-  CHECK_ROOT; fi
+  CHECK_ROOT
+fi
 BACKUP
 INSTALL
-SYMLINK
+if test $SYMLINK == 1; then
+  SYMLINK
+fi
 

@@ -31,24 +31,10 @@ CHECK_ENV() {
     fi
 }
 
-# Check whether I'm running standalone
-CHECK_STANDALONE() {
-    #if test -n "`pgrep dpkg`" -o "`pgrep apt`"
-    if ! lsof /var/lib/dpkg/lock >> /dev/null; then 
-      echo "error: you're running me as a stand-alone application"
-      echo "  do not do this, I will be called automatically when"
-      echo "  required by busybox-power"
-      exit 1
-    fi
-}
-
 # Check whether the user is root
 CHECK_ROOT() {
     if test "`$EXECPWR id -u`" -ne 0; then
-      echo "error: you're not running me as root, aborting"
-      echo "  also, DO NOT run me as a stand-alone application"
-      echo "  I will be called automatically when required by"
-      echo "  busybox-power"
+      echo "error: you're not running me as root"
       exit 1
     fi
 }

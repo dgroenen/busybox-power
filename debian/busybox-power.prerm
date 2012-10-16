@@ -184,13 +184,12 @@ ECHO_VERBOSE "  binary: $EXECPWR"
 ECHO_VERBOSE "  version string: `$EXECPWR | $EXECPWR head -n 1`"
 CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
 
-CHECK_STANDALONE
 CHECK_SYMLINKSFILE
 if test "$ENVIRONMENT" != "SDK"; then
   CHECK_ROOT
-  CHECK_BACKUP
-  CHECK_INSTALLEDBIN
 fi
+CHECK_BACKUP
+CHECK_INSTALLEDBIN
 if test -e /tmp/busybox-power-error; then
   # An error has occured during the checks
   DISPLAY_ERRORS
