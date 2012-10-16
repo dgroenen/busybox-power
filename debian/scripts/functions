@@ -6,8 +6,6 @@
 # By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
 #
-# Last updated: 08-24-2012 (MM-DD-YYYY)
-# 
 
 # Verbose-aware echo
 ECHO_VERBOSE() {

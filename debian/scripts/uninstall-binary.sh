@@ -10,8 +10,6 @@
 # By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
 #
-# Last updated: 08-24-2012 (MM-DD-YYYY)
-# 
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
