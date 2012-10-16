@@ -35,24 +35,24 @@ CHECK_BACKUP() {
     fi
 
     # Secondly, check the integrity of the backup
-    if test -e $INSTALLDIR/busybox.original.md5; then
-      INSTBINARY_MD5=`cat $INSTALLDIR/busybox.original.md5`
-      ORIGBINARY_MD5=`md5sum $INSTALLDIR/busybox.original | awk '{ print $1 }'`
-      if test ! "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
-        echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid md5 checksum). Do not continue unless you're sure $INSTALLDIR/busybox.original isn't corrupted.\n" >> /tmp/busybox-power-error
+    if test -e $INSTALLDIR/busybox.original.sha1; then
+      INSTBINARY_SHA1=`cat $INSTALLDIR/busybox.original.sha1`
+      ORIGBINARY_SHA1=`sha1sum $INSTALLDIR/busybox.original | awk '{ print $1 }'`
+      if test ! "$INSTBINARY_SHA1" == "$ORIGBINARY_SHA1"; then
+        echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid SHA1 checksum). Do not continue unless you're sure $INSTALLDIR/busybox.original isn't corrupted.\n" >> /tmp/busybox-power-error
       fi
     else
-      echo -e "Warning: couldn't load the saved md5 checksum of the original binary; the integrity of the backup of the original binary can not be guaranteed.\n" >> /tmp/busybox-power-error
+      echo -e "Warning: couldn't load the saved SHA1 checksum of the original binary; the integrity of the backup of the original binary can not be guaranteed.\n" >> /tmp/busybox-power-error
     fi
 }
 
 # Check whether /bin/busybox has been modified after bb-power's installation
 CHECK_INSTALLEDBIN() {
-    if test -e $INSTALLDIR/busybox.power.md5; then
-      INSTBINARY_MD5=`md5sum /bin/busybox | awk '{ print $1 }'`
-      ORIGBINARY_MD5=`cat $INSTALLDIR/busybox.power.md5`
-      if test ! "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
-        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid md5 checksum). This can be the result of a busybox upgrade, e.g. from CSSU. Your current /bin/busybox won't be touched, our backup of the original /bin/busybox will be copied to /opt/busybox.original. \n" >> /tmp/busybox-power-error
+    if test -e $INSTALLDIR/busybox.power.sha1; then
+      INSTBINARY_SHA1=`sha1sum /bin/busybox | awk '{ print $1 }'`
+      ORIGBINARY_SHA1=`cat $INSTALLDIR/busybox.power.sha1`
+      if test ! "$INSTBINARY_SHA1" == "$ORIGBINARY_SHA1"; then
+        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid SHA1 checksum). This can be the result of a busybox upgrade, e.g. from CSSU. Your current /bin/busybox won't be touched, our backup of the original /bin/busybox will be copied to /opt/busybox.original. \n" >> /tmp/busybox-power-error
         MODIFIEDBIN="1"
       fi
     fi
@@ -144,8 +144,8 @@ UNSYMLINK() {
 # Action to be performed after restoring original busybox
 CLEANUP() {
     OLDFILES="busybox-power.symlinks
-      busybox.power.md5
-      busybox.original.md5"
+      busybox.power.sha1
+      busybox.original.sha1"
 
     for file in $OLDFILES; do
       if test -e $INSTALLDIR/$file; then

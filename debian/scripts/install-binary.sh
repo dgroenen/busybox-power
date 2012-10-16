@@ -37,12 +37,12 @@ CHECK_SYMLINKSFILE() {
     fi
 }
 
-# Create MD5 hashes of relevant binaries
+# Create SHA1 hashes of relevant binaries
 HASH_BINARIES() {
-    $EXECPWR md5sum $INSTALLDIR/busybox.power | $EXECPWR awk '{ print $1 }' \
-      > $INSTALLDIR/busybox.power.md5
-    $EXECPWR md5sum /bin/busybox | $EXECPWR awk '{ print $1 }' \
-      > $INSTALLDIR/busybox.original.md5
+    $EXECPWR sha1sum $INSTALLDIR/busybox.power | $EXECPWR awk '{ print $1 }' \
+      > $INSTALLDIR/busybox.power.sha1
+    $EXECPWR sha1sum /bin/busybox | $EXECPWR awk '{ print $1 }' \
+      > $INSTALLDIR/busybox.original.sha1
 }
 
 # Backup the original BusyBox binary
@@ -55,9 +55,9 @@ BACKUP() {
         ;;
       FREMANTLE)
         # Check whether busybox-power isn't somehow installed already
-        INSTBINARY_MD5=`$EXECPWR cat $INSTALLDIR/busybox.power.md5`
-        ORIGBINARY_MD5=`$EXECPWR cat $INSTALLDIR/busybox.original.md5`
-        if test "$INSTBINARY_MD5" == "$ORIGBINARY_MD5"; then
+        INSTBINARY_SHA1=`$EXECPWR cat $INSTALLDIR/busybox.power.sha1`
+        ORIGBINARY_SHA1=`$EXECPWR cat $INSTALLDIR/busybox.original.sha1`
+        if test "$INSTBINARY_SHA1" == "$ORIGBINARY_SHA1"; then
           echo "warning: installed busybox binary matches the binary"
           echo "  that is to be installed"
           if ! test -e $INSTALLDIR/busybox.original; then 
