@@ -14,6 +14,7 @@
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
 DISTBIN="/bin/busybox.distrib"
+
 VERBOSE="0"
 MODIFIEDBIN="0"
 
@@ -27,39 +28,46 @@ source $INSTALLDIR/functions
 # Check whether we can load the list of created symlinks during installation
 CHECK_SYMLINKSFILE() {
     if test ! -e $INSTALLDIR/busybox-power.symlinks; then
-      echo -e "Error: cannot find the list of symlinks to be removed. No symlinks will be removed at all!\n" >> /tmp/busybox-power-error
+      echo -e "Warning: cannot find the list of symlinks to be removed. No" \
+        "symlinks will be removed at all!\n" >> /tmp/busybox-power-error
     fi
 }
 
 # Check the (integrity) of our BusyBox backup
 CHECK_BACKUP() {
-    # SDK doesn't ship with BusyBox by default, there might be no backup at all
-    if test ! -e $DISTBIN -a "$ENVIRONMENT" == "SDK" ; then
-      return; fi
-
     # Firstly, check whether the backup still exists
     if test ! -e $DISTBIN; then
-      echo -e "Error: original binary is missing! Continuing will only remove the symlinks made during installation, /bin/busybox stays untouched.\n" >> /tmp/busybox-power-error
+      if test "$ENVIRONMENT" == "SDK"; then return; fi # SDK comes without BB
+      echo -e "Warning: the backup of the original BusyBox binary is missing!" \
+        "/bin/busybox will not be touched.\n" >> /tmp/busybox-power-error
       return
     fi
 
     # Secondly, check the integrity of the backup
     if test -e $INSTALLDIR/busybox.distrib.sha1; then
-      if test ! "`cat $INSTALLDIR/busybox.distrib.sha1`" == "$ORIGBINARY_SHA1"; then
+      if test "`cat $INSTALLDIR/busybox.distrib.sha1`" != "$ORIGBINARY_SHA1"; then
         if test "`cat $INSTALLDIR/busybox.distrib.version`" == "`GETBBVERSION`"; then
           # The backup has been changed whilst busybox hasn't been upgraded
-          echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid SHA1 checksum). Do not continue unless you're sure $DISTBIN isn't corrupted.\n" >> /tmp/busybox-power-error
+          echo -e "Warning: the backup of the original BusyBox binary has" \
+            "been modified since installing busybox-power (invalid SHA1" \
+            "checksum). Do not continue unless you're sure that $DISTBIN" \
+            "is not corrupted.\n" >> /tmp/busybox-power-error
         fi
       fi
     else
-      echo -e "Warning: couldn't load the saved SHA1 checksum of the original binary; the integrity of the backup of the original binary can not be guaranteed.\n" >> /tmp/busybox-power-error
+      echo -e "Warning: could not load the saved SHA1 checksum of the backup" \
+        "of the original BusyBox binary; the integrity of the backup of the" \
+        "original binary can not be guaranteed.\n" >> /tmp/busybox-power-error
     fi
 }
 
 # Check whether /bin/busybox has been modified after bb-power's installation
 CHECK_INSTALLEDBIN() {
-    if test ! "$INSTBINARY_SHA1" == "`sha1sum /bin/busybox | awk '{ print $1 }'`"; then
-      echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid SHA1 checksum). Your current /bin/busybox won't be touched and the diversion of /bin/busybox to $DISTBIN will not be removed. \n" >> /tmp/busybox-power-error
+    if test "$INSTBINARY_SHA1" != "`sha1sum /bin/busybox | awk '{ print $1 }'`"; then
+      echo -e "Warning: /bin/busybox has been modified since installing" \
+        "busybox-power (invalid SHA1 checksum). Your current /bin/busybox" \
+        "won't be touched and the diversion of /bin/busybox to $DISTBIN will" \
+        "not be removed. \n" >> /tmp/busybox-power-error
       MODIFIEDBIN="1"
     fi
 }
@@ -76,7 +84,8 @@ DISPLAY_ERRORS() {
         read 
         ;;
       FREMANTLE)
-        echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for help if you don't know what to do." >> /tmp/busybox-power-error
+        echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for" \
+          "help if you don't know what to do." >> /tmp/busybox-power-error
         echo "Please confirm the text on the screen of your device"
         maemo-confirm-text "Attention!" /tmp/busybox-power-error
         res=$?
@@ -133,7 +142,8 @@ UNSYMLINK() {
       ECHO_VERBOSE "\nRemoving symlinks in $DIR"
       # Walk through all applications from the current destination
       for APP in $APPLICATIONS; do
-        # The following code is executed for every application in the current destination
+        # The following code is executed for every application in the current
+        # destination
         if test -h $DIR/$APP; then 
           # Good, this app is still a symbolic link ..
           if test -n "`ls -l $DIR/$APP | grep busybox`"; then
