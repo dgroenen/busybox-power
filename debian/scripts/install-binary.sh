@@ -15,6 +15,7 @@
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
+DISTBIN="/bin/busybox.distrib"
 VERBOSE="0"
 
 INSTBINARY_SHA1=`$EXECPWR sha1sum $EXECPWR | $EXECPWR awk '{ print $1 }'`
@@ -48,15 +49,15 @@ BACKUP() {
     fi
 
     if ! test "$INSTBINARY_SHA1" == "$ORIGBINARY_SHA1"; then
-      $EXECPWR cp /bin/busybox $INSTALLDIR/busybox.original
-      $EXECPWR sha1sum $INSTALLDIR/busybox.original | $EXECPWR awk '{ print $1 }' \
-        > $INSTALLDIR/busybox.original.sha1
+      $EXECPWR cp -a /bin/busybox $DISTBIN
+      $EXECPWR sha1sum $DISTBIN | $EXECPWR awk '{ print $1 }' \
+        > $INSTALLDIR/busybox.distrib.sha1
     fi
 }
 
 # Overwrite the installed binary with the enhanced binary
 INSTALL() {
-    /usr/sbin/dpkg-divert --local --divert /bin/busybox.distrib /bin/busybox
+    /usr/sbin/dpkg-divert --local --divert $DISTBIN /bin/busybox
     $EXECPWR cp -f $EXECPWR /bin/busybox
 }
 

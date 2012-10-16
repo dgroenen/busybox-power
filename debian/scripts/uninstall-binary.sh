@@ -13,13 +13,13 @@
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
+DISTBIN="/bin/busybox.distrib"
 VERBOSE="0"
 MODIFIEDBIN="0"
-DIVERTED="0"
 
 INSTBINARY_SHA1=`sha1sum $EXECPWR | awk '{ print $1 }'`
-if test -e $INSTALLDIR/busybox.original; then
-  ORIGBINARY_SHA1=`sha1sum $INSTALLDIR/busybox.original | awk '{ print $1 }'`; fi
+if test -e $DISTBIN; then
+  ORIGBINARY_SHA1=`sha1sum $DISTBIN | awk '{ print $1 }'`; fi
 
 # Load shared functions
 source $INSTALLDIR/functions
@@ -31,28 +31,22 @@ CHECK_SYMLINKSFILE() {
     fi
 }
 
-# Check for a diversion of /bin/busybox
-CHECK_DIVERT() {
-    if test -e /bin/busybox.distrib; then
-      DIVERTED="1"; fi
-}
-
 # Check the (integrity) of our BusyBox backup
 CHECK_BACKUP() {
     # SDK doesn't ship with BusyBox by default, there might be no backup at all
-    if test ! -e $INSTALLDIR/busybox.original -a "$ENVIRONMENT" == "SDK" ; then
+    if test ! -e $DISTBIN -a "$ENVIRONMENT" == "SDK" ; then
       return; fi
 
     # Firstly, check whether the backup still exists
-    if test ! -e $INSTALLDIR/busybox.original; then
+    if test ! -e $DISTBIN; then
       echo -e "Error: original binary is missing! Continuing will only remove the symlinks made during installation, /bin/busybox stays untouched.\n" >> /tmp/busybox-power-error
       return
     fi
 
     # Secondly, check the integrity of the backup
-    if test -e $INSTALLDIR/busybox.original.sha1; then
-      if test ! "`cat $INSTALLDIR/busybox.original.sha1`" == "$ORIGBINARY_SHA1"; then
-        echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid SHA1 checksum). Do not continue unless you're sure $INSTALLDIR/busybox.original isn't corrupted.\n" >> /tmp/busybox-power-error
+    if test -e $INSTALLDIR/busybox.distrib.sha1; then
+      if test ! "`cat $INSTALLDIR/busybox.distrib.sha1`" == "$ORIGBINARY_SHA1"; then
+        echo -e "Warning: the backed-up original binary has been modified since installing busybox-power (invalid SHA1 checksum). Do not continue unless you're sure $DISTBIN isn't corrupted.\n" >> /tmp/busybox-power-error
       fi
     else
       echo -e "Warning: couldn't load the saved SHA1 checksum of the original binary; the integrity of the backup of the original binary can not be guaranteed.\n" >> /tmp/busybox-power-error
@@ -62,7 +56,7 @@ CHECK_BACKUP() {
 # Check whether /bin/busybox has been modified after bb-power's installation
 CHECK_INSTALLEDBIN() {
     if test ! "$INSTBINARY_SHA1" == "`sha1sum /bin/busybox | awk '{ print $1 }'`"; then
-      echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid SHA1 checksum). Your current /bin/busybox won't be touched, our backup of the original /bin/busybox will be copied to /opt/busybox.original. \n" >> /tmp/busybox-power-error
+      echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid SHA1 checksum). Your current /bin/busybox won't be touched and the diversion of /bin/busybox to $DISTBIN will not be removed. \n" >> /tmp/busybox-power-error
       MODIFIEDBIN="1"
     fi
 }
@@ -91,19 +85,14 @@ DISPLAY_ERRORS() {
 
 # Uninstallation of the enhanced binary
 UNINSTALL() {
-    if test $DIVERTED == 1; then
-      # A package tried to install /bin/busybox since installing busybox-power
-      # This binary has priority over our own (old) backup
-      mv -f /bin/busybox.distrib /bin/busybox
-      rm $INSTALLDIR/busybox.original
-    elif test $MODIFIEDBIN == 1; then
+    if test $MODIFIEDBIN == 1; then
       # /bin/busybox has been modified since installing busybox-power
-      # Do not overwrite this modified version with our backup
-      mv -f $INSTALLDIR/busybox.original /opt/busybox.original
-    elif test -e $INSTALLDIR/busybox.original; then
-      cp -f $INSTALLDIR/busybox.original /bin/busybox
+      # Leave both the file and the diversion in place
+      return
+    elif test -e $DISTBIN; then
+      cp -af $DISTBIN /bin/busybox
       if test -e /bin/busybox; then
-        rm $INSTALLDIR/busybox.original; fi
+        rm $DISTBIN; fi
     elif test "$ENVIRONMENT" == "SDK"; then
       # There was no /bin/busybox to begin with..
       rm /bin/busybox
@@ -156,7 +145,7 @@ UNSYMLINK() {
 # Action to be performed after restoring original busybox
 CLEANUP() {
     OLDFILES="busybox-power.symlinks
-      busybox.original.sha1"
+      busybox.distrib.sha1"
 
     for file in $OLDFILES; do
       if test -e $INSTALLDIR/$file; then
@@ -173,7 +162,6 @@ CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
 
 CHECK_STANDALONE
 CHECK_SYMLINKSFILE
-CHECK_DIVERT
 if test "$ENVIRONMENT" != "SDK"; then
   CHECK_ROOT
   CHECK_BACKUP
