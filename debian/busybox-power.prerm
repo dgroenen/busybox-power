@@ -71,13 +71,31 @@ CHECK_BACKUP() {
 }
 
 # Check whether /bin/busybox has been modified after bb-power's installation
+# This always happens on Harmattan when it receives a BusyBox upgrade;
+# dpkg-divert is disallowed on that platform
 CHECK_INSTALLEDBIN() {
     if test "$INSTBINARY_SHA1" != "`sha1sum /bin/busybox | awk '{ print $1 }'`"; then
-      echo -e "Warning: /bin/busybox has been modified since installing" \
-        "busybox-power (invalid SHA1 checksum). Your current /bin/busybox" \
-        "won't be touched and the diversion of /bin/busybox to $DISTBIN will" \
-        "not be removed. \n" >> /tmp/busybox-power-error
       MODIFIEDBIN="1"
+
+      if test "$ENVIRONMENT" == "HARMATTAN"; then
+        if test -e $INSTALLDIR/busybox.distrib.version; then
+          if test "`cat $INSTALLDIR/busybox.distrib.version`" != "`GETBBVERSION`"; then
+            # Harmattan received a BusyBox upgrade, do not disturb the user by
+            # warning that /bin/busybox has been modified
+            return
+          fi
+        fi
+        echo -e "Warning: /bin/busybox has been modified since installing" \
+          "busybox-power (invalid SHA1 checksum). This can be the result of a" \
+          "BusyBox upgrade (e.g. by a Meego update). Your current" \
+          "/bin/busybox won't be touched. Our backup of the original BusyBox" \
+          "binary will be left at $DISTBIN.\n" >> /tmp/busybox-power-error
+      else
+        echo -e "Warning: /bin/busybox has been modified since installing" \
+          "busybox-power (invalid SHA1 checksum). Your current /bin/busybox" \
+          "won't be touched and the diversion of /bin/busybox to $DISTBIN" \
+          "will not be removed.\n" >> /tmp/busybox-power-error
+      fi
     fi
 }
 
@@ -101,7 +119,25 @@ DISPLAY_ERRORS() {
         rm /tmp/busybox-power-error
         if test ! $res == 0; then exit 1; fi
         ;;
+      HARMATTAN)
+        echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for" \
+          "help if you don't know what to do." >> /tmp/busybox-power-error
+        echo "Please confirm the text on the screen of your device"
+        meego-confirm-text "Attention!" /tmp/busybox-power-error > /dev/null 2>&1
+        res=$?
+        rm /tmp/busybox-power-error
+        if test ! $res == 0; then exit 1; fi
+        ;;
       esac
+}
+
+# Rollback procedure for Harmattan based devices
+ROLLBACK_HARMATTAN() {
+    echo -e "\nWarning: an error has occured! Rolling back..."
+    $EXECPWR cp -af $TMPBINBAK /bin/busybox
+    $EXECPWR cp -a $TMPHASHBAK /var/lib/aegis/refhashlist
+    echo "End of roll-back"
+    exit 1
 }
 
 # Uninstallation of the enhanced binary
@@ -110,16 +146,57 @@ UNINSTALL() {
       # /bin/busybox has been modified since installing busybox-power
       # Leave both the file and the diversion in place
       return
-    elif test -e $DISTBIN; then
-      cp -af $DISTBIN /bin/busybox
-      if test -e /bin/busybox; then
-        rm $DISTBIN; fi
-    elif test "$ENVIRONMENT" == "SDK"; then
-      # There was no /bin/busybox to begin with..
-      rm /bin/busybox
     fi
 
-    /usr/sbin/dpkg-divert --remove /bin/busybox
+    case $ENVIRONMENT in
+      SDK|FREMANTLE)
+        if test -e $DISTBIN; then
+          cp -af $DISTBIN /bin/busybox
+          if test -e /bin/busybox; then
+            rm $DISTBIN; fi
+        elif test "$ENVIRONMENT" == "SDK"; then
+          # There was no /bin/busybox to begin with..
+          rm /bin/busybox
+        fi
+
+        /usr/sbin/dpkg-divert --remove /bin/busybox
+        ;;
+      HARMATTAN)
+        if ! test -e $DISTBIN; then return; fi
+
+        TMPHASHBAK=`$EXECPWR mktemp`
+        TMPBINBAK=`$EXECPWR mktemp`
+        ORIGINCHECK=`GETORIGINCHECK_STATUS`
+        DEVICEMODE=`GETDEVICEMODE`
+
+        # Useful information for Harmattan-based devices
+        ECHO_VERBOSE "refhashlist backup: $TMPHASHBAK"
+        ECHO_VERBOSE "busybox backup: $TMPBINBAK"
+        ECHO_VERBOSE "instbinary: $INSTBINARY_SHA1"
+        ECHO_VERBOSE "origbinary: $ORIGBINARY_SHA1"
+        ECHO_VERBOSE "device mode: $DEVICEMODE"
+        ECHO_VERBOSE "origincheck: $ORIGINCHECK"
+
+        if test $ORIGINCHECK -eq 1; then
+          /usr/sbin/aegisctl -s > /dev/null || exit 1; fi
+
+        $EXECPWR cp -a /bin/busybox $TMPBINBAK || exit 1
+        $EXECPWR cp -a /var/lib/aegis/refhashlist $TMPHASHBAK || exit 1
+        $EXECPWR cp -af $DISTBIN /bin/busybox || ROLLBACK_HARMATTAN
+        $EXECPWR sed -i "s/$INSTBINARY_SHA1/$ORIGBINARY_SHA1/" /var/lib/aegis/refhashlist || ROLLBACK_HARMATTAN
+        /usr/bin/accli -c tcb-sign -F /var/lib/aegis/refhashlist < /var/lib/aegis/refhashlist || ROLLBACK_HARMATTAN
+        /usr/sbin/validator-init
+
+        # We can't determine whether aegis is neutered in Open Mode or not, so
+        # simply don't re-enable any security options except for in Closed Mode
+        if test $DEVICEMODE != "open" -a $ORIGINCHECK -eq 1; then
+          /usr/sbin/aegisctl +s > /dev/null; fi
+
+        rm $TMPBINBAK
+        rm $TMPHASHBAK
+        rm $DISTBIN
+        ;;
+    esac
 }
 
 # Remove all symlinks that the installation script has made

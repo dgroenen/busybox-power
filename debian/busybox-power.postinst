@@ -57,10 +57,56 @@ BACKUP() {
     fi
 }
 
+# Rollback procedure for Harmattan based devices
+ROLLBACK_HARMATTAN() {
+    echo -e "\nWarning: an error has occured! Rolling back..."
+    $EXECPWR cp -af $TMPBINBAK /bin/busybox
+    $EXECPWR cp -a $TMPHASHBAK /var/lib/aegis/refhashlist
+    echo "End of roll-back"
+    exit 1
+}
+
 # Overwrite the installed binary with the enhanced binary
+# dpkg-divert is disallowed on Harmattan, do not use it there!
 INSTALL() {
-    /usr/sbin/dpkg-divert --local --divert $DISTBIN /bin/busybox
-    $EXECPWR cp -f $EXECPWR /bin/busybox
+    case $ENVIRONMENT in
+      SDK|FREMANTLE)
+        /usr/sbin/dpkg-divert --local --divert $DISTBIN /bin/busybox
+        $EXECPWR cp -f $EXECPWR /bin/busybox
+        ;;
+      HARMATTAN)
+        TMPHASHBAK=`$EXECPWR mktemp`
+        TMPBINBAK=`$EXECPWR mktemp`
+        ORIGINCHECK=`GETORIGINCHECK_STATUS`
+        DEVICEMODE=`GETDEVICEMODE`
+ 
+        # Useful information for Harmattan-based devices
+        ECHO_VERBOSE "refhashlist backup: $TMPHASHBAK"
+        ECHO_VERBOSE "busybox backup: $TMPBINBAK"
+        ECHO_VERBOSE "instbinary: $INSTBINARY_SHA1"
+        ECHO_VERBOSE "origbinary: $ORIGBINARY_SHA1"
+        ECHO_VERBOSE "device mode: $DEVICEMODE"
+        ECHO_VERBOSE "origincheck: $ORIGINCHECK"
+
+        if test $ORIGINCHECK -eq 1; then
+          /usr/sbin/aegisctl -s > /dev/null || exit 1; fi
+ 
+        $EXECPWR cp -a /bin/busybox $TMPBINBAK || exit 1
+        $EXECPWR cp -a /var/lib/aegis/refhashlist $TMPHASHBAK || exit 1
+        $EXECPWR cp -af $EXECPWR /bin/busybox || ROLLBACK_HARMATTAN
+        $EXECPWR sed -i "s/$ORIGBINARY_SHA1/$INSTBINARY_SHA1/" /var/lib/aegis/refhashlist || ROLLBACK_HARMATTAN
+        /usr/bin/accli -c tcb-sign -F /var/lib/aegis/refhashlist < /var/lib/aegis/refhashlist || ROLLBACK_HARMATTAN
+        /usr/sbin/validator-init
+
+        # We can't determine whether aegis is neutered in Open Mode or not, so
+        # simply don't re-enable any security options except for in Closed Mode
+        if test $DEVICEMODE != "open" -a $ORIGINCHECK -eq 1; then
+          /usr/sbin/aegisctl +s > /dev/null; fi
+
+        $EXECPWR rm $TMPBINBAK
+        $EXECPWR rm $TMPHASHBAK
+        ;;
+    esac
 }
 
 # Create missing symlinks to the enhanced binary

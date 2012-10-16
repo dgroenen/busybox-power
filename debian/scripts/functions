@@ -52,3 +52,15 @@ GETBBVERSION() {
     # XXX We assume the package "busybox" provides /bin/busybox
     /usr/bin/dpkg -s busybox | $EXECPWR awk '/^Version:/ {print $2}'
 }
+
+# Get the current device mode in Harmattan. Returns "open" or "normal"
+GETDEVICEMODE() {
+    /usr/bin/accli -I | $EXECPWR awk '/^Current mode:/ {print $3}'
+}
+
+# Get the enforcement status of aegis' source origin check. Returns "1" when
+# the check is active, otherwise "0"
+GETORIGINCHECK_STATUS() {
+    /usr/sbin/aegisctl | $EXECPWR sed 's/,.*//' | $EXECPWR grep "s" | $EXECPWR wc -l
+}
+
