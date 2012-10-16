@@ -15,6 +15,7 @@ INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
 VERBOSE="0"
 MODIFIEDBIN="0"
+DIVERTED="0"
 
 # Load shared functions
 source $INSTALLDIR/functions
@@ -24,6 +25,12 @@ CHECK_SYMLINKSFILE() {
     if test ! -e $INSTALLDIR/busybox-power.symlinks; then
       echo -e "Error: cannot find the list of symlinks to be removed. No symlinks will be removed at all!\n" >> /tmp/busybox-power-error
     fi
+}
+
+# Check for a diversion of /bin/busybox
+CHECK_DIVERT() {
+    if test -e /bin/busybox.distrib; then
+      DIVERTED="1"; fi
 }
 
 # Check the (integrity) of our BusyBox backup
@@ -52,7 +59,7 @@ CHECK_INSTALLEDBIN() {
       INSTBINARY_SHA1=`sha1sum /bin/busybox | awk '{ print $1 }'`
       ORIGBINARY_SHA1=`cat $INSTALLDIR/busybox.power.sha1`
       if test ! "$INSTBINARY_SHA1" == "$ORIGBINARY_SHA1"; then
-        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid SHA1 checksum). This can be the result of a busybox upgrade, e.g. from CSSU. Your current /bin/busybox won't be touched, our backup of the original /bin/busybox will be copied to /opt/busybox.original. \n" >> /tmp/busybox-power-error
+        echo -e "Warning: /bin/busybox has been modified since installing busybox-power (invalid SHA1 checksum). Your current /bin/busybox won't be touched, our backup of the original /bin/busybox will be copied to /opt/busybox.original. \n" >> /tmp/busybox-power-error
         MODIFIEDBIN="1"
       fi
     fi
@@ -82,22 +89,25 @@ DISPLAY_ERRORS() {
 
 # Uninstallation of the enhanced binary
 UNINSTALL() {
-    if test $MODIFIEDBIN == 1; then
+    if test $DIVERTED == 1; then
+      # A package tried to install /bin/busybox since installing busybox-power
+      # This binary has priority over our own (old) backup
+      mv -f /bin/busybox.distrib /bin/busybox
+      rm $INSTALLDIR/busybox.original
+    elif test $MODIFIEDBIN == 1; then
       # /bin/busybox has been modified since installing busybox-power
       # Do not overwrite this modified version with our backup
-      mv $INSTALLDIR/busybox.original /opt/busybox.original
-      return
-    fi
-    if test -e $INSTALLDIR/busybox.original; then
+      mv -f $INSTALLDIR/busybox.original /opt/busybox.original
+    elif test -e $INSTALLDIR/busybox.original; then
       cp -f $INSTALLDIR/busybox.original /bin/busybox
       if test -e /bin/busybox; then
         rm $INSTALLDIR/busybox.original; fi
-    else
-      if test "$ENVIRONMENT" == "SDK"; then
-        # There was no /bin/busybox to begin with..
-        rm /bin/busybox
-      fi
+    elif test "$ENVIRONMENT" == "SDK"; then
+      # There was no /bin/busybox to begin with..
+      rm /bin/busybox
     fi
+
+    /usr/sbin/dpkg-divert --remove /bin/busybox
 }
 
 # Remove all symlinks that the installation script has made
@@ -162,6 +172,7 @@ CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
 
 CHECK_STANDALONE
 CHECK_SYMLINKSFILE
+CHECK_DIVERT
 if test "$ENVIRONMENT" != "SDK"; then
   CHECK_ROOT
   CHECK_BACKUP

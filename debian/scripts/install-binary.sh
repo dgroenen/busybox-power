@@ -71,6 +71,7 @@ BACKUP() {
 
 # Overwrite the installed binary with the enhanced binary
 INSTALL() {
+    /usr/sbin/dpkg-divert --local --divert /bin/busybox.distrib /bin/busybox
     $EXECPWR cp -f $INSTALLDIR/busybox.power /bin/busybox
 }
 
