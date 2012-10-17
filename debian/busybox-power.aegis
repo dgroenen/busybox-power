@@ -1,0 +1,9 @@
+<aegis>
+  <request>
+    <credential name="CAP::sys_module"/>
+    <credential name="tcb"/>
+      <for path="/var/lib/dpkg/info/busybox-power.postinst" />
+      <for path="/var/lib/dpkg/info/busybox-power.prerm" />
+  </request>
+</aegis>
+
