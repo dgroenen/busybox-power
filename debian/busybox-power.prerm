@@ -167,7 +167,6 @@ UNINSTALL() {
         TMPHASHBAK=`$EXECPWR mktemp`
         TMPBINBAK=`$EXECPWR mktemp`
         ORIGINCHECK=`GETORIGINCHECK_STATUS`
-        DEVICEMODE=`GETDEVICEMODE`
 
         # Useful information for Harmattan-based devices
         ECHO_VERBOSE "refhashlist backup: $TMPHASHBAK"
@@ -178,7 +177,7 @@ UNINSTALL() {
         ECHO_VERBOSE "origincheck: $ORIGINCHECK"
 
         if test $ORIGINCHECK -eq 1; then
-          /usr/sbin/aegisctl -s > /dev/null || exit 1; fi
+          SETORIGINCHECK_STATUS 0; fi
 
         $EXECPWR cp -a /bin/busybox $TMPBINBAK || exit 1
         $EXECPWR cp -a /var/lib/aegis/refhashlist $TMPHASHBAK || exit 1
@@ -187,10 +186,8 @@ UNINSTALL() {
         /usr/bin/accli -c tcb-sign -F /var/lib/aegis/refhashlist < /var/lib/aegis/refhashlist || ROLLBACK_HARMATTAN
         /usr/sbin/validator-init
 
-        # We can't determine whether aegis is neutered in Open Mode or not, so
-        # simply don't re-enable any security options except for in Closed Mode
-        if test $DEVICEMODE != "open" -a $ORIGINCHECK -eq 1; then
-          /usr/sbin/aegisctl +s > /dev/null; fi
+        if test $ORIGINCHECK -eq 1; then
+          SETORIGINCHECK_STATUS 1; fi
 
         rm $TMPBINBAK
         rm $TMPHASHBAK
