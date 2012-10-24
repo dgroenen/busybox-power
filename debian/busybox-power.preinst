@@ -52,14 +52,10 @@ EOF
   HARMATTAN)
     f=/tmp/busybox-power-msg
     cat > $f <<EOF
-This is a public testing release of busybox-power for Harmattan. USE AT YOUR OWN RISK.
-Do note that even though the installation should roll-back all its changes upon the slightest error during installation, there might still be bugs in this mechanism.
-
-This warning will eventually be replaced with busybox-power's usual warning as found below.
-
--------
 Warning: This package touches an essential system binary!
 Even though installation should be safe, a reflash might be required if something does go wrong (i.e. worst-case scenario).
+
+Please back up all your valuable data before installing busybox-power.
 
 Files overwritten by this package:
 bin/busybox
