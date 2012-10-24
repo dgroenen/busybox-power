@@ -1,3 +1,12 @@
+busybox-power (1.20.2power4+harmattan0) unstable; urgency=low
+
+  * Apply initial Harmattan specific config changes
+  * Add aegis manifest file
+  * Update debian/control file
+  * Remove patches that are not applicable to Harmattan
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Wed, 24 Oct 2012 22:10:00 +0200
+
 busybox-power (1.20.2power4) unstable; urgency=low
 
   * Divert /bin/busybox during installation
