@@ -25,6 +25,8 @@ showkey-default-option.patch
 
 # Hotfixes
 hotfixes/busybox-1.20.2-kernel_ver.patch
+hotfixes/busybox-1.20.2-pkg-config-selinux.patch
+hotfixes/busybox-1.20.2-sys-resource.patch
 
 # Dark blue on black is nearly impossible to read, use red.
 # Leaving this commented out as dark blue on white is fine, and there isn't any
