@@ -6,8 +6,6 @@
 # By Dennis Groenen <tj.groenen@gmail.com>
 # GPLv3 licensed
 #
-# Last updated: 08-24-2012 (MM-DD-YYYY)
-# 
 
 # Verbose-aware echo
 ECHO_VERBOSE() {
@@ -20,37 +18,87 @@ CHECK_ENV() {
     if test -d /scratchbox; then
       ENVIRONMENT="SDK"
     else
-      PROD=$($EXECPWR cat /proc/component_version | $EXECPWR grep product | $EXECPWR cut -d" " -f 6)
+      if test -e /proc/component_version; then
+        PROD=$($EXECPWR cat /proc/component_version | $EXECPWR grep product | $EXECPWR cut -d" " -f 6)
+      else
+        PROD=$(/usr/bin/sysinfoclient --get /component/product | $EXECPWR awk '{ print $3 }')
+      fi
+
       case $PROD in
         RX-51)
           ENVIRONMENT="FREMANTLE"
           ;;
+        RM-680|RM-696)
+          ENVIRONMENT="HARMATTAN"
+          ;;
         *)
-          # Unsupported, use the least strict environment (SDK)
-          ENVIRONMENT="SDK"
+          echo "busybox-power: unsupported environment: $PROD"
+          exit 1
           ;;
       esac
-    fi
-}
-
-# Check whether I'm running standalone
-CHECK_STANDALONE() {
-    #if test -n "`pgrep dpkg`" -o "`pgrep apt`"
-    if ! lsof /var/lib/dpkg/lock >> /dev/null; then 
-      echo "error: you're running me as a stand-alone application"
-      echo "  do not do this, I will be called automatically when"
-      echo "  required by busybox-power"
-      exit 1
     fi
 }
 
 # Check whether the user is root
 CHECK_ROOT() {
     if test "`$EXECPWR id -u`" -ne 0; then
-      echo "error: you're not running me as root, aborting"
-      echo "  also, DO NOT run me as a stand-alone application"
-      echo "  I will be called automatically when required by"
-      echo "  busybox-power"
+      echo "error: you're not running me as root"
       exit 1
     fi
 }
+
+# Get the version string of the package providing /bin/busybox
+GETBBVERSION() {
+    # XXX We assume the package "busybox" provides /bin/busybox
+    /usr/bin/dpkg -s busybox | $EXECPWR awk '/^Version:/ {print $2}'
+}
+
+# Get the enforcement status of aegis' source origin check. Returns "1" when
+# the check is active, otherwise "0"
+GETORIGINCHECK_STATUS() {
+    ENFORCE="/sys/kernel/security/validator/enforce"
+    ENFORCE_HEX=`$EXECPWR cat $ENFORCE`
+    SID_CHECK_BIT="2"
+
+    if test "$ENFORCE_HEX" == ""; then exit 1; fi
+    RETVAL="1"
+    if test `echo $(($ENFORCE_HEX & $SID_CHECK_BIT))` -eq 0; then
+      RETVAL="0"
+    fi
+    echo $RETVAL
+}
+
+# Set the enforcement status of aegis' source origin check. The check will be
+# enabled when passed "1"; passing "0" will disable it.
+# Works in both normal and open mode via aegisctl, and in patched open mode via
+# via writing to sysfs entries directly
+SETORIGINCHECK_STATUS() {
+    ENABLE=$1
+
+    ENFORCE="/sys/kernel/security/validator/enforce"
+    ENFORCE_HEX=`$EXECPWR cat $ENFORCE`
+    SID_CHECK_BIT="2"
+
+    if test $ENABLE -gt 0; then
+      if test `GETORIGINCHECK_STATUS` -eq 1; then return; fi # Already on
+      ENFORCE_NEW_DEC=`echo $(($ENFORCE_HEX | $SID_CHECK_BIT))`
+      ENFORCE_NEW_HEX=`printf "0x%02x" $ENFORCE_NEW_DEC`
+      echo $ENFORCE_NEW_HEX > $ENFORCE 2> /dev/null
+      if test $? -gt 0; then
+        # Do not exit 1 on failure to re-enable the origincheck; not fatal for
+        # (un)installation of busybox-power
+        /usr/sbin/aegisctl +s > /dev/null
+      fi
+    else
+      if test `GETORIGINCHECK_STATUS` -eq 0; then return; fi # Already off
+      ENFORCE_NEW_DEC=`echo $(($ENFORCE_HEX ^ $SID_CHECK_BIT))`
+      ENFORCE_NEW_HEX=`printf "0x%02x" $ENFORCE_NEW_DEC`
+      echo $ENFORCE_NEW_HEX > $ENFORCE 2> /dev/null
+      if test $? -gt 0; then
+        /usr/sbin/aegisctl @s > /dev/null || exit 1
+      fi
+    fi
+
+    ECHO_VERBOSE "new origincheck: $ENABLE ($ENFORCE_NEW_HEX)"
+}
+

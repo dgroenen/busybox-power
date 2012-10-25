@@ -1,15 +1,286 @@
 #!/bin/sh
-set -e
+# A script to restore /bin/busybox and delete the symlinks made during 
+# installation.
+#
+# Symbolic links to applets are only removed if they are
+# 1) created by the installer script ("install-binary.sh")
+# 2) not replaced by a binary (i.e. they are still a symbolic link)
+# 3) pointing to a busybox binary
+#
+# By Dennis Groenen <tj.groenen@gmail.com>
+# GPLv3 licensed
+#
 
-sh /opt/busybox-power/uninstall-binary.sh
+INSTALLDIR="/opt/busybox-power"
+EXECPWR="$INSTALLDIR/busybox.power"
+DISTBIN="/bin/busybox.distrib"
 
-# Clean up trap (from busybox-power <= 1.20.2power1)
-# Should be removed by the old prerm, but may be left behind when that one fails
-# and dpkg uses this one instead. Therefore, keep this cleanup included for a 
-# few busybox-power releases.
-line="trap exit SIGHUP #by busybox-power"
-if grep -F -q "$line" /etc/profile; then
-  sed "/$line/d" /etc/profile > /tmp/profile.sed
-  mv /tmp/profile.sed /etc/profile
+VERBOSE="0"
+MODIFIEDBIN="0"
+
+INSTBINARY_SHA1=`sha1sum $EXECPWR | awk '{ print $1 }'`
+if test -e $DISTBIN; then
+  ORIGBINARY_SHA1=`sha1sum $DISTBIN | awk '{ print $1 }'`; fi
+
+# Load shared functions
+source $INSTALLDIR/functions
+
+# Check whether we can load the list of created symlinks during installation
+CHECK_SYMLINKSFILE() {
+    if test ! -e $INSTALLDIR/busybox-power.symlinks; then
+      echo -e "Warning: cannot find the list of symlinks to be removed. No" \
+        "symlinks will be removed at all!\n" >> /tmp/busybox-power-error
+    fi
+}
+
+# Check the (integrity) of our BusyBox backup
+CHECK_BACKUP() {
+    # Firstly, check whether the backup still exists
+    if test ! -e $DISTBIN; then
+      if test "$ENVIRONMENT" == "SDK"; then return; fi # SDK comes without BB
+      echo -e "Warning: the backup of the original BusyBox binary is missing!" \
+        "/bin/busybox will not be touched.\n" >> /tmp/busybox-power-error
+      return
+    fi
+
+    # Secondly, check the integrity of the backup
+    if test -e $INSTALLDIR/busybox.distrib.sha1; then
+      if test "`cat $INSTALLDIR/busybox.distrib.sha1`" != "$ORIGBINARY_SHA1"; then
+        if test -e $INSTALLDIR/busybox.distrib.version; then
+          if test "`cat $INSTALLDIR/busybox.distrib.version`" == "`GETBBVERSION`"; then
+            # The backup has been changed whilst busybox hasn't been upgraded
+            echo -e "Warning: the backup of the original BusyBox binary has" \
+              "been modified since installing busybox-power. Do not continue" \
+              "unless you're sure that $DISTBIN is not corrupted.\n" \
+              >> /tmp/busybox-power-error
+          fi
+        else
+          echo -e "Warning: the backup of the original BusyBox binary has" \
+          "been modified since installing busybox-power. We could not" \
+          "determine whether this is due to a BusyBox upgrade (e.g. by an" \
+          "(C)SSU update) or not. Do not continue unless either the latter is" \
+          "the case, or you're via other ways sure that $DISTBIN is not" \
+          "corrupted.\n" >> /tmp/busybox-power-error
+        fi
+      fi
+    else
+      echo -e "Warning: could not load the saved SHA1 checksum of the backup" \
+        "of the original BusyBox binary; the integrity of the backup of the" \
+        "original binary can not be guaranteed.\n" >> /tmp/busybox-power-error
+    fi
+}
+
+# Check whether /bin/busybox has been modified after bb-power's installation
+# This always happens on Harmattan when it receives a BusyBox upgrade;
+# dpkg-divert is disallowed on that platform
+CHECK_INSTALLEDBIN() {
+    if test "$INSTBINARY_SHA1" != "`sha1sum /bin/busybox | awk '{ print $1 }'`"; then
+      MODIFIEDBIN="1"
+
+      if test "$ENVIRONMENT" == "HARMATTAN"; then
+        if test -e $INSTALLDIR/busybox.distrib.version; then
+          if test "`cat $INSTALLDIR/busybox.distrib.version`" != "`GETBBVERSION`"; then
+            # Harmattan received a BusyBox upgrade, do not disturb the user by
+            # warning that /bin/busybox has been modified
+            return
+          fi
+        fi
+        echo -e "Warning: /bin/busybox has been modified since installing" \
+          "busybox-power. This can be the result of a BusyBox upgrade (e.g." \
+          "by a Meego update). Your current /bin/busybox won't be touched." \
+          "Our backup of the original BusyBox binary will be left at" \
+          "$DISTBIN.\n" >> /tmp/busybox-power-error
+      else
+        echo -e "Warning: /bin/busybox has been modified since installing" \
+          "busybox-power. Your current /bin/busybox won't be touched and the" \
+          "diversion of /bin/busybox to $DISTBIN will not be removed.\n" \
+          >> /tmp/busybox-power-error
+      fi
+    fi
+}
+
+# Display encountered errors
+DISPLAY_ERRORS() {
+    case $ENVIRONMENT in
+      SDK)
+        echo -e "\n\n-----------Attention!-----------"
+        cat /tmp/busybox-power-error
+        rm /tmp/busybox-power-error
+        echo "-> Please press [enter] to ignore the above errors/warnings."
+        echo "   Hit [ctrl-c] to break"
+        read 
+        ;;
+      FREMANTLE)
+        echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for" \
+          "help if you don't know what to do." >> /tmp/busybox-power-error
+        echo "Please confirm the text on the screen of your device"
+        maemo-confirm-text "Attention!" /tmp/busybox-power-error
+        res=$?
+        rm /tmp/busybox-power-error
+        if test ! $res == 0; then exit 1; fi
+        ;;
+      HARMATTAN)
+        echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for" \
+          "help if you don't know what to do." >> /tmp/busybox-power-error
+        echo "Please confirm the text on the screen of your device"
+        # We're too privileged to call meego-confirm-text...
+        # Our source is com.nokia.maemo, whilst m-c-t is from an unknown source
+        /usr/bin/aegis-exec meego-confirm-text "Attention!" \
+          /tmp/busybox-power-error > /dev/null 2>&1
+        res=$?
+        rm /tmp/busybox-power-error
+        if test ! $res == 0; then exit 1; fi
+        ;;
+      esac
+}
+
+# Rollback procedure for Harmattan based devices
+ROLLBACK_HARMATTAN() {
+    echo -e "\nWarning: an error has occured! Rolling back..."
+    $EXECPWR cp -af $TMPBINBAK /bin/busybox
+    $EXECPWR cp -a $TMPHASHBAK /var/lib/aegis/refhashlist
+    echo "End of roll-back"
+    exit 1
+}
+
+# Uninstallation of the enhanced binary
+UNINSTALL() {
+    if test $MODIFIEDBIN == 1; then
+      # /bin/busybox has been modified since installing busybox-power
+      # Leave both the file and the diversion in place
+      return
+    fi
+
+    case $ENVIRONMENT in
+      SDK|FREMANTLE)
+        if test -e $DISTBIN; then
+          cp -af $DISTBIN /bin/busybox
+          if test -e /bin/busybox; then
+            rm $DISTBIN; fi
+        elif test "$ENVIRONMENT" == "SDK"; then
+          # There was no /bin/busybox to begin with..
+          rm /bin/busybox
+        fi
+
+        /usr/sbin/dpkg-divert --remove /bin/busybox
+        ;;
+      HARMATTAN)
+        if ! test -e $DISTBIN; then return; fi
+
+        TMPHASHBAK=`$EXECPWR mktemp`
+        TMPBINBAK=`$EXECPWR mktemp`
+        ORIGINCHECK=`GETORIGINCHECK_STATUS`
+
+        # Useful information for Harmattan-based devices
+        ECHO_VERBOSE "refhashlist backup: $TMPHASHBAK"
+        ECHO_VERBOSE "busybox backup: $TMPBINBAK"
+        ECHO_VERBOSE "instbinary: $INSTBINARY_SHA1"
+        ECHO_VERBOSE "origbinary: $ORIGBINARY_SHA1"
+        ECHO_VERBOSE "device mode: $DEVICEMODE"
+        ECHO_VERBOSE "origincheck: $ORIGINCHECK"
+
+        if test $ORIGINCHECK -eq 1; then
+          SETORIGINCHECK_STATUS 0; fi
+
+        $EXECPWR cp -a /bin/busybox $TMPBINBAK || exit 1
+        $EXECPWR cp -a /var/lib/aegis/refhashlist $TMPHASHBAK || exit 1
+        $EXECPWR cp -af $DISTBIN /bin/busybox || ROLLBACK_HARMATTAN
+        $EXECPWR sed -i "s/$INSTBINARY_SHA1/$ORIGBINARY_SHA1/" /var/lib/aegis/refhashlist || ROLLBACK_HARMATTAN
+        /usr/bin/accli -c tcb-sign -F /var/lib/aegis/refhashlist < /var/lib/aegis/refhashlist || ROLLBACK_HARMATTAN
+        /usr/sbin/validator-init
+
+        if test $ORIGINCHECK -eq 1; then
+          SETORIGINCHECK_STATUS 1; fi
+
+        rm $TMPBINBAK
+        rm $TMPHASHBAK
+        rm $DISTBIN
+        ;;
+    esac
+}
+
+# Remove all symlinks that the installation script has made
+UNSYMLINK() {
+    # Load list of installed symlinks
+    touch $INSTALLDIR/busybox-power.symlinks
+    source $INSTALLDIR/busybox-power.symlinks
+
+    # Walk through all possible destinations
+    for DESTDIR in $DESTINATIONS; do 
+      # Enable us to see all entries in $DESTINATIONS as variables
+      eval "APPLICATIONS=\$$DESTDIR"
+      # Set destination directory accordingly
+      case $DESTDIR in
+        DEST_BIN)
+          DIR="/bin"
+          ;;
+        DEST_SBIN)
+          DIR="/sbin"
+          ;;
+        DEST_USRBIN)
+          DIR="/usr/bin"
+          ;;
+        DEST_USRSBIN)
+          DIR="/usr/sbin"
+          ;;
+      esac
+
+      ECHO_VERBOSE "\nRemoving symlinks in $DIR"
+      # Walk through all applications from the current destination
+      for APP in $APPLICATIONS; do
+        # The following code is executed for every application in the current
+        # destination
+        if test -h $DIR/$APP; then 
+          # Good, this app is still a symbolic link ..
+          if test -n "`ls -l $DIR/$APP | grep busybox`"; then
+            ECHO_VERBOSE "Removing link: $DIR/$APP"
+            rm $DIR/$APP
+          fi
+        fi
+      done
+    done
+}
+
+# Action to be performed after restoring original busybox
+CLEANUP() {
+    OLDFILES="busybox-power.symlinks
+      busybox.distrib.version
+      busybox.distrib.sha1"
+
+    for file in $OLDFILES; do
+      if test -e $INSTALLDIR/$file; then
+        rm $INSTALLDIR/$file
+      fi
+    done
+
+    # Clean up trap (from busybox-power <= 1.20.2power1)
+    # Should be removed by the old prerm, but may be left behind when that one
+    # fails and dpkg uses this one instead. Therefore, keep this cleanup
+    # included for a few busybox-power releases.
+    line="trap exit SIGHUP #by busybox-power"
+    if grep -F -q "$line" /etc/profile; then
+      sed "/$line/d" /etc/profile > /tmp/profile.sed
+      mv /tmp/profile.sed /etc/profile
+    fi
+}
+
+### Codepath ###
+ECHO_VERBOSE "busybox-power: verbose mode"
+ECHO_VERBOSE "  binary: $EXECPWR"
+ECHO_VERBOSE "  version string: `$EXECPWR | $EXECPWR head -n 1`"
+CHECK_ENV && ECHO_VERBOSE "  environment: $ENVIRONMENT"
+
+CHECK_SYMLINKSFILE
+if test "$ENVIRONMENT" != "SDK"; then
+  CHECK_ROOT
 fi
+CHECK_BACKUP
+CHECK_INSTALLEDBIN
+if test -e /tmp/busybox-power-error; then
+  # An error has occured during the checks
+  DISPLAY_ERRORS
+fi
+UNSYMLINK
+UNINSTALL
+CLEANUP
 

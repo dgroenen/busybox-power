@@ -1,3 +1,16 @@
+busybox-power (1.20.2power4) unstable; urgency=low
+
+  * Divert /bin/busybox during installation
+  * Use SHA1 hashes instead of MD5 for integrity control
+  * Move (un)install-binary.sh to postinst and prerm scripts
+  * Introduce Harmattan support in the installation framework
+  * Improve error handling in (un)installation
+  * Remove cleanup code for old conffile
+  * Increase copy buffer size, great speed improvement in various applets
+  * Update BusyBox 1.20.2 hotfixes
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Wed, 24 Oct 2012 17:55:14 +0200
+
 busybox-power (1.20.2power3+thumb0) unstable; urgency=low
 
   * Merged master
