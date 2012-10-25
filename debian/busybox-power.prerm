@@ -50,17 +50,17 @@ CHECK_BACKUP() {
           if test "`cat $INSTALLDIR/busybox.distrib.version`" == "`GETBBVERSION`"; then
             # The backup has been changed whilst busybox hasn't been upgraded
             echo -e "Warning: the backup of the original BusyBox binary has" \
-              "been modified since installing busybox-power (invalid SHA1" \
-              "checksum). Do not continue unless you're sure that $DISTBIN" \
-              "is not corrupted.\n" >> /tmp/busybox-power-error
+              "been modified since installing busybox-power. Do not continue" \
+              "unless you're sure that $DISTBIN is not corrupted.\n" \
+              >> /tmp/busybox-power-error
           fi
         else
           echo -e "Warning: the backup of the original BusyBox binary has" \
-          "been modified since installing busybox-power (invalid SHA1" \
-          "checksum). We could not determine whether this is due to a BusyBox" \
-          "upgrade (e.g. by an (C)SSU update) or not. Do not continue unless" \
-          "either the latter is the case, or you're via other ways sure that" \
-          "$DISTBIN is not corrupted.\n" >> /tmp/busybox-power-error
+          "been modified since installing busybox-power. We could not" \
+          "determine whether this is due to a BusyBox upgrade (e.g. by an" \
+          "(C)SSU update) or not. Do not continue unless either the latter is" \
+          "the case, or you're via other ways sure that $DISTBIN is not" \
+          "corrupted.\n" >> /tmp/busybox-power-error
         fi
       fi
     else
@@ -86,15 +86,15 @@ CHECK_INSTALLEDBIN() {
           fi
         fi
         echo -e "Warning: /bin/busybox has been modified since installing" \
-          "busybox-power (invalid SHA1 checksum). This can be the result of a" \
-          "BusyBox upgrade (e.g. by a Meego update). Your current" \
-          "/bin/busybox won't be touched. Our backup of the original BusyBox" \
-          "binary will be left at $DISTBIN.\n" >> /tmp/busybox-power-error
+          "busybox-power. This can be the result of a BusyBox upgrade (e.g." \
+          "by a Meego update). Your current /bin/busybox won't be touched." \
+          "Our backup of the original BusyBox binary will be left at" \
+          "$DISTBIN.\n" >> /tmp/busybox-power-error
       else
         echo -e "Warning: /bin/busybox has been modified since installing" \
-          "busybox-power (invalid SHA1 checksum). Your current /bin/busybox" \
-          "won't be touched and the diversion of /bin/busybox to $DISTBIN" \
-          "will not be removed.\n" >> /tmp/busybox-power-error
+          "busybox-power. Your current /bin/busybox won't be touched and the" \
+          "diversion of /bin/busybox to $DISTBIN will not be removed.\n" \
+          >> /tmp/busybox-power-error
       fi
     fi
 }
