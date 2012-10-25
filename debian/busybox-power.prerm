@@ -123,7 +123,10 @@ DISPLAY_ERRORS() {
         echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for" \
           "help if you don't know what to do." >> /tmp/busybox-power-error
         echo "Please confirm the text on the screen of your device"
-        meego-confirm-text "Attention!" /tmp/busybox-power-error > /dev/null 2>&1
+        # We're too privileged to call meego-confirm-text...
+        # Our source is com.nokia.maemo, whilst m-c-t is from an unknown source
+        /usr/bin/aegis-exec meego-confirm-text "Attention!" \
+          /tmp/busybox-power-error > /dev/null 2>&1
         res=$?
         rm /tmp/busybox-power-error
         if test ! $res == 0; then exit 1; fi
