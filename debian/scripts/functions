@@ -32,8 +32,8 @@ CHECK_ENV() {
           ENVIRONMENT="HARMATTAN"
           ;;
         *)
-          # Unsupported, use the least strict environment (SDK)
-          ENVIRONMENT="SDK"
+          echo "busybox-power: unsupported environment: $PROD"
+          exit 1
           ;;
       esac
     fi
