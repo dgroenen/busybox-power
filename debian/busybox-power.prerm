@@ -110,7 +110,7 @@ DISPLAY_ERRORS() {
         echo "   Hit [ctrl-c] to break"
         read 
         ;;
-      FREMANTLE)
+      DIABLO|FREMANTLE)
         echo "Click \"I Agree\" to ignore the above errors/warnings. Ask for" \
           "help if you don't know what to do." >> /tmp/busybox-power-error
         echo "Please confirm the text on the screen of your device"
@@ -152,7 +152,7 @@ UNINSTALL() {
     fi
 
     case $ENVIRONMENT in
-      SDK|FREMANTLE)
+      SDK|DIABLO|FREMANTLE)
         if test -e $DISTBIN; then
           cp -af $DISTBIN /bin/busybox
           if test -e /bin/busybox; then

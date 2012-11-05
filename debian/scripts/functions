@@ -25,6 +25,9 @@ CHECK_ENV() {
       fi
 
       case $PROD in
+        RX-34|RX-44)
+          ENVIRONMENT="DIABLO"
+          ;;
         RX-51)
           ENVIRONMENT="FREMANTLE"
           ;;

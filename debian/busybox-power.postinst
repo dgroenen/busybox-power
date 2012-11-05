@@ -70,7 +70,7 @@ ROLLBACK_HARMATTAN() {
 # dpkg-divert is disallowed on Harmattan, do not use it there!
 INSTALL() {
     case $ENVIRONMENT in
-      SDK|FREMANTLE)
+      SDK|DIABLO|FREMANTLE)
         /usr/sbin/dpkg-divert --local --divert $DISTBIN /bin/busybox
         $EXECPWR cp -f $EXECPWR /bin/busybox
         ;;
