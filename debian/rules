@@ -71,33 +71,43 @@ clean:
 	dh_testdir
 	rm -rf $(BUILD_DIR) $(STAMPS_DIR)
 	dh_clean
+	rm -rf debian/busybox-power-noaegis*
 
 binary-indep:
 
-binary-arch: binary-arch_busybox binary-arch_all
+binary-arch: binary-arch_busybox binary-arch_busybox-noaegis binary-arch_all
 
 binary-arch_busybox: DIR = $(BUILD_DIR)/build_busybox
 binary-arch_busybox: DH_OPTIONS = -pbusybox-power
 binary-arch_busybox: $(STAMPS_DIR)/build_busybox
 	dh_testdir
 	dh_testroot
-	dh_clean -k -d
 	install -D -m644 debian/scripts/applets debian/busybox-power/opt/busybox-power/applets
 	install -D -m644 debian/scripts/functions debian/busybox-power/opt/busybox-power/functions
 	install -D -m755 $(DIR)/busybox_unstripped debian/busybox-power/opt/busybox-power/busybox.power
 
+binary-arch_busybox-noaegis: DIR = $(BUILD_DIR)/build_busybox
+binary-arch_busybox-noaegis: DH_OPTIONS = -pbusybox-power-noaegis
+binary-arch_busybox-noaegis: $(STAMPS_DIR)/build_busybox
+	dh_testdir
+	dh_testroot
+	# busybox-power-noaegis == busybox-power, only debian/control differs
+	# Therefore, duplicate busybox-power into busybox-power-noaegis
+	for f in debian/busybox-power*; do cp -a "$$f" "$${f/busybox-power/busybox-power-noaegis}"; done
+	sed -i s/busybox-power/busybox-power-noaegis/ debian/busybox-power-noaegis.aegis
+
 binary-arch_all:
 	dh_installdirs
-	dh_installdocs -pbusybox-power
-	dh_installchangelogs -pbusybox-power
-	dh_strip -pbusybox-power
-	dh_compress -pbusybox-power
+	dh_installdocs
+	dh_installchangelogs
+	dh_strip
+	dh_compress
 
 	dh_link
 	dh_fixperms
 	dh_installdeb
 
-	dh_shlibdeps -pbusybox-power
+	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
