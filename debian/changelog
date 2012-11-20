@@ -1,3 +1,9 @@
+meego-confirm-text (0.0.2) unstable; urgency=low
+
+  * OBS support by Philippe Coval
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Tue, 20 Nov 2012 19:51:56 +0100
+
 meego-confirm-text (0.0.0-0) UNRELEASED; urgency=low
 
   * Non-maintainer upload.
