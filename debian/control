@@ -4,7 +4,7 @@ Section: user/utilities
 Maintainer: Dennis Groenen <tj.groenen@gmail.com>
 XSBC-Bugtracker: https://garage.maemo.org/tracker/?group_id=2216
 XSBC-Original-Maintainer: Yauheni Kaliuta <yauheni.kaliuta@nokia.com>
-Build-Depends: debhelper (>> 5), lsb-release, python, quilt
+Build-Depends: debhelper (>> 5), lsb-release, python, quilt, maemo-version
 Standards-Version: 3.7.3
 
 Package: busybox-power
