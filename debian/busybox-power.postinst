@@ -71,7 +71,10 @@ ROLLBACK_HARMATTAN() {
 INSTALL() {
     case $ENVIRONMENT in
       SDK|DIABLO|FREMANTLE)
-        /usr/sbin/dpkg-divert --local --divert $DISTBIN /bin/busybox
+        # Divert in postinst instead of preinst, we don't want to leave Maemo
+        # without /bin/busybox for a short period of time
+        /usr/sbin/dpkg-divert --package busybox-power --add \
+          --divert $DISTBIN /bin/busybox
         $EXECPWR cp -f $EXECPWR /bin/busybox
         ;;
       HARMATTAN)
