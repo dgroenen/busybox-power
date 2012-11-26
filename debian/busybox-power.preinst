@@ -33,6 +33,11 @@ else
   esac
 fi
 
+# Don't show the warning message when the user wants an unattended installation
+# or if $DISPLAY is not set
+if test -z "$DISPLAY" || test -e /tmp/.bbp-unattended; then exit 0; fi
+
+# Warning message
 case $ENVIRONMENT in
   SDK)
     # Extra warning doesn't apply to SDK, just exit
