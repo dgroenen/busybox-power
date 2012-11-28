@@ -85,15 +85,16 @@ CHECK_INSTALLEDBIN() {
             return
           fi
         fi
-        echo -e "Warning: /bin/busybox has been modified since installing" \
-          "busybox-power. This can be the result of a BusyBox upgrade (e.g." \
-          "by a Meego update). Your current /bin/busybox won't be touched." \
-          "Our backup of the original BusyBox binary will be left at" \
-          "$DISTBIN.\n" >> /tmp/busybox-power-error
+        echo -e "Warning: /bin/busybox does not match busybox-power's binary" \
+          "This can be the result of a BusyBox upgrade (e.g. by a MeeGo" \
+          "update), an unsuccessful busybox-power installation, or a manual" \
+          "replacement of it. Your current /bin/busybox won't be touched. Our" \
+          "backup of the original BusyBox binary will be left at $DISTBIN.\n" \
+          >> /tmp/busybox-power-error
       else
-        echo -e "Warning: /bin/busybox has been modified since installing" \
-          "busybox-power. Your current /bin/busybox won't be touched and the" \
-          "diversion of /bin/busybox to $DISTBIN will not be removed.\n" \
+        echo -e "Warning: /bin/busybox does not match busybox-power's binary." \
+          "Your current /bin/busybox won't be touched and the diversion of" \
+          "/bin/busybox to $DISTBIN will not be removed.\n" \
           >> /tmp/busybox-power-error
       fi
     fi
