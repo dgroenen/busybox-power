@@ -33,9 +33,10 @@ else
   esac
 fi
 
-# Don't show the warning message when the user wants an unattended installation
-# or if $DISPLAY is not set
-if test -z "$DISPLAY" || test -e /tmp/.bbp-unattended; then exit 0; fi
+# Don't show the warning message when the user wants an unattended installation,
+# if $DISPLAY is not set or $SSH_TTY is set
+if test -z "$DISPLAY" || test -n "$SSH_TTY" || test -e /tmp/.bbp-unattended
+  then exit 0; fi
 
 # Warning message
 case $ENVIRONMENT in
