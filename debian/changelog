@@ -1,3 +1,9 @@
+busybox-power (1.20.2power5+thumb0) unstable; urgency=low
+
+  * Merged master
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Fri, 30 Nov 2012 19:58:28 +0100
+
 busybox-power (1.20.2power5) unstable; urgency=low
 
   * Introduce Diablo support (by Teemu Ikonen)
