@@ -49,6 +49,8 @@ $(STAMPS_DIR)/setup_%: $(STAMPS_DIR)/source
 	rm -rf '$(DIR)'
 	cp -al '$(SOURCE_DIR)' '$(DIR)'
 	cp debian/config/config.$* '$(DIR)'/.config
+	grep -qv Diablo /etc/maemo_version \
+		|| cp debian/config/config.$*.diablo '$(DIR)'/.config
 	make -C '$(DIR)' oldconfig
 	touch $@
 

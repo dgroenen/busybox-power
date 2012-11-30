@@ -1,3 +1,13 @@
+busybox-power (1.20.2power5) unstable; urgency=low
+
+  * Introduce Diablo support (by Teemu Ikonen)
+  * Don't show the first time inst. warning when /tmp/.bbp-unattended exists
+  * Don't use local diversions
+  * Modify warning messages to include more useful information
+  * Check for $DISPLAY and $SSH_TTY in preinst
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Wed, 28 Nov 2012 22:30:14 +0100
+
 busybox-power (1.20.2power4+thumb0) unstable; urgency=low
 
   * Merged master

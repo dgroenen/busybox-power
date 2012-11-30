@@ -14,8 +14,12 @@ else
   fi
 
   case $PROD in
+    RX-34|RX-44)
+      echo "busybox-power: Maemo4 (N8x0) environment detected"
+      ENVIRONMENT="DIABLO"
+      ;;
     RX-51)
-      echo "busybox-power: Maemo (N900) environment detected"
+      echo "busybox-power: Maemo5 (N900) environment detected"
       ENVIRONMENT="FREMANTLE"
       ;;
     RM-680|RM-696)
@@ -29,16 +33,23 @@ else
   esac
 fi
 
+# Don't show the warning message when the user wants an unattended installation,
+# if $DISPLAY is not set or $SSH_TTY is set
+if test -z "$DISPLAY" || test -n "$SSH_TTY" || test -e /tmp/.bbp-unattended
+  then exit 0; fi
+
+# Warning message
 case $ENVIRONMENT in
   SDK)
     # Extra warning doesn't apply to SDK, just exit
     exit 0
     ;;
-  FREMANTLE)
+  DIABLO|FREMANTLE)
     f=/tmp/busybox-power-msg
     cat > $f <<EOF
 Warning: This package touches an essential system binary!
-Even though installation should be safe, a reflash might be required if something does go wrong (i.e. worst-case scenario).
+Even though installation should be safe, a reflash might be required
+if something does go wrong (i.e. worst-case scenario).
 
 Files overwritten by this package:
 bin/busybox
