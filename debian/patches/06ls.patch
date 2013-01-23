@@ -1,8 +1,5 @@
 Flush all open files after showing files
-By Yauheni Kaliuta <yauheni.kaliuta@nokia.com>
-
-Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
----
+Original patch by Yauheni Kaliuta <yauheni.kaliuta@nokia.com>
 
 --- a/coreutils/ls.c
 +++ b/coreutils/ls.c

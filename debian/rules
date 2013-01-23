@@ -14,7 +14,7 @@ ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
 	CONFIG_DEBUG = y
 endif
 ifneq (,$(findstring thumb,$(DEB_BUILD_OPTIONS)))
-THUMB := -mthumb
+	THUMB := -mthumb
 endif
 
 ifneq (,$(findstring parallel,$(DEB_BUILD_OPTIONS)))

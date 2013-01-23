@@ -1,6 +1,4 @@
 Parse the complete hostname when set from a file (busybox-1.10.2 behaviour)
-By Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
----
 
 --- a/networking/hostname.c
 +++ b/networking/hostname.c
