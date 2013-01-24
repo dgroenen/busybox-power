@@ -49,8 +49,6 @@ $(STAMPS_DIR)/setup_%: $(STAMPS_DIR)/source
 	rm -rf '$(DIR)'
 	cp -al '$(SOURCE_DIR)' '$(DIR)'
 	cp debian/config/config.busybox '$(DIR)'/.config
-	grep -qv Diablo /etc/maemo_version \
-		|| cp debian/config/config.busybox.diablo '$(DIR)'/.config
 	if test "$*" == "busybox-althist"; then \
 		sed -i "s/CONFIG_FEATURE_EDITING_SAVE_ON_EXIT=y/# CONFIG_FEATURE_EDITING_SAVE_ON_EXIT is not set/" '$(DIR)'/.config; fi
 	make -C '$(DIR)' oldconfig
