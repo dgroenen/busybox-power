@@ -33,4 +33,5 @@ showkey-default-option.patch
 # Patched pulled from busybox git
 
 # Miscellaneous
+0001-Revert-ushcpc-gracefully-handle-packets-with-CHECKSU.patch
 
