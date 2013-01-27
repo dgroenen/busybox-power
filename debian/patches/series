@@ -24,9 +24,6 @@ showkey-default-option.patch
 0002-ash-install-SIGHUP-signal-handler-when-interactive.patch
 
 # Hotfixes
-hotfixes/busybox-1.20.2-kernel_ver.patch
-hotfixes/busybox-1.20.2-pkg-config-selinux.patch
-hotfixes/busybox-1.20.2-sys-resource.patch
 
 # Dark blue on black is nearly impossible to read, use red.
 # Leaving this commented out as dark blue on white is fine, and there isn't any
@@ -34,7 +31,6 @@ hotfixes/busybox-1.20.2-sys-resource.patch
 #ls_color_red.patch
 
 # Patched pulled from busybox git
-patches-backports/0001-backport-vi-save-restore-screen-upon-invocation.patch
 
 # Miscellaneous
 

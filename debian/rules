@@ -14,7 +14,7 @@ ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
 	CONFIG_DEBUG = y
 endif
 #ifneq (,$(findstring thumb,$(DEB_BUILD_OPTIONS)))
-THUMB := -mthumb
+	THUMB := -mthumb
 #endif
 
 ifneq (,$(findstring parallel,$(DEB_BUILD_OPTIONS)))
@@ -40,7 +40,7 @@ $(STAMPS_DIR)/source:
 	cd $(DIR); QUILT_PATCHES=$(CURDIR)/debian/patches quilt --quiltrc /dev/null push -a || test $$? = 2
 	touch $@
 
-setup: $(STAMPS_DIR)/setup_busybox
+setup: $(STAMPS_DIR)/setup_busybox $(STAMPS_DIR)/setup_busybox-althist
 
 $(STAMPS_DIR)/setup_%: SOURCE_DIR=$(BUILD_DIR)/source
 $(STAMPS_DIR)/setup_%: DIR=$(BUILD_DIR)/build_$*
@@ -48,13 +48,13 @@ $(STAMPS_DIR)/setup_%: $(STAMPS_DIR)/source
 	dh_testdir
 	rm -rf '$(DIR)'
 	cp -al '$(SOURCE_DIR)' '$(DIR)'
-	cp debian/config/config.$* '$(DIR)'/.config
-	grep -qv Diablo /etc/maemo_version \
-		|| cp debian/config/config.$*.diablo '$(DIR)'/.config
+	cp debian/config/config.busybox '$(DIR)'/.config
+	if test "$*" == "busybox-althist"; then \
+		sed -i "s/CONFIG_FEATURE_EDITING_SAVE_ON_EXIT=y/# CONFIG_FEATURE_EDITING_SAVE_ON_EXIT is not set/" '$(DIR)'/.config; fi
 	make -C '$(DIR)' oldconfig
 	touch $@
 
-build: $(STAMPS_DIR)/build_busybox
+build: $(STAMPS_DIR)/build_busybox $(STAMPS_DIR)/build_busybox-althist
 
 $(STAMPS_DIR)/build_%: DIR=$(BUILD_DIR)/build_$*
 $(STAMPS_DIR)/build_%: $(STAMPS_DIR)/setup_%
@@ -73,33 +73,45 @@ clean:
 	dh_testdir
 	rm -rf $(BUILD_DIR) $(STAMPS_DIR)
 	dh_clean
+	rm -rf debian/busybox-power-althistory*
 
 binary-indep:
 
-binary-arch: binary-arch_busybox binary-arch_all
+binary-arch: binary-arch_busybox binary-arch_busybox-althist binary-arch_all
 
 binary-arch_busybox: DIR = $(BUILD_DIR)/build_busybox
 binary-arch_busybox: DH_OPTIONS = -pbusybox-power
 binary-arch_busybox: $(STAMPS_DIR)/build_busybox
 	dh_testdir
 	dh_testroot
-	dh_clean -k -d
 	install -D -m644 debian/scripts/applets debian/busybox-power/opt/busybox-power/applets
 	install -D -m644 debian/scripts/functions debian/busybox-power/opt/busybox-power/functions
 	install -D -m755 $(DIR)/busybox_unstripped debian/busybox-power/opt/busybox-power/busybox.power
 
+binary-arch_busybox-althist: DIR = $(BUILD_DIR)/build_busybox-althist
+binary-arch_busybox-althist: DH_OPTIONS = -pbusybox-power-althist
+binary-arch_busybox-althist: $(STAMPS_DIR)/build_busybox-althist
+	dh_testdir
+	dh_testroot
+	# busybox-power-althist == busybox-power, only BusyBox' .config differs
+	# Duplicate the maintainer scripts etc. into busybox-power-althist
+	for f in debian/busybox-power.*; do cp -p "$$f" "$${f/busybox-power/busybox-power-althist}"; done
+	install -D -m644 debian/scripts/applets debian/busybox-power-althist/opt/busybox-power/applets
+	install -D -m644 debian/scripts/functions debian/busybox-power-althist/opt/busybox-power/functions
+	install -D -m755 $(DIR)/busybox_unstripped debian/busybox-power-althist/opt/busybox-power/busybox.power
+
 binary-arch_all:
 	dh_installdirs
-	dh_installdocs -pbusybox-power
-	dh_installchangelogs -pbusybox-power
-	dh_strip -pbusybox-power
-	dh_compress -pbusybox-power
+	dh_installdocs
+	dh_installchangelogs
+	dh_strip
+	dh_compress
 
 	dh_link
 	dh_fixperms
 	dh_installdeb
 
-	dh_shlibdeps -pbusybox-power
+	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

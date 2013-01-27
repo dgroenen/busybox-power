@@ -1,12 +1,9 @@
 Change top to display RSS instead of VSZ.
-By Alexander Shishkin <ext-alexander.shishkin@nokia.com>
-
-Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
----
+Original patch by Alexander Shishkin <ext-alexander.shishkin@nokia.com>
 
 --- a/procps/top.c
 +++ b/procps/top.c
-@@ -54,7 +54,7 @@
+@@ -108,7 +108,7 @@
  
  
  typedef struct top_status_t {
@@ -15,7 +12,7 @@ Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
  #if ENABLE_FEATURE_TOP_CPU_USAGE_PERCENTAGE
  	unsigned long ticks;
  	unsigned pcpu; /* delta of ticks */
-@@ -166,8 +166,8 @@ static int pid_sort(top_status_t *P, top
+@@ -228,8 +228,8 @@ static int pid_sort(top_status_t *P, top
  static int mem_sort(top_status_t *P, top_status_t *Q)
  {
  	/* We want to avoid unsigned->signed and truncation errors */
@@ -26,7 +23,7 @@ Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
  }
  
  
-@@ -538,7 +538,7 @@ static NOINLINE void display_process_lis
+@@ -600,7 +600,7 @@ static NOINLINE void display_process_lis
  
  	/* what info of the processes is shown */
  	printf(OPT_BATCH_MODE ? "%.*s" : "\033[7m%.*s\033[0m", scr_width,
@@ -35,7 +32,7 @@ Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
  		IF_FEATURE_TOP_SMP_PROCESS(" CPU")
  		IF_FEATURE_TOP_CPU_USAGE_PERCENTAGE(" %CPU")
  		" COMMAND");
-@@ -556,7 +556,7 @@ static NOINLINE void display_process_lis
+@@ -618,7 +618,7 @@ static NOINLINE void display_process_lis
  # define FMT "%4u%%"
  #endif
  	/*
@@ -44,8 +41,8 @@ Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
  	 */
  	pmem_shift = BITS_PER_INT-11;
  	pmem_scale = UPSCALE*(1U<<(BITS_PER_INT-11)) / total_memory;
-@@ -607,16 +607,16 @@ static NOINLINE void display_process_lis
- 	s = top;
+@@ -669,16 +669,16 @@ static NOINLINE void display_process_lis
+ 	s = top + G_scroll_ofs;
  	while (--lines_rem >= 0) {
  		unsigned col;
 -		CALC_STAT(pmem, (s->vsz*pmem_scale + pmem_half) >> pmem_shift);
@@ -66,7 +63,7 @@ Ported to BusyBox 1.19 by Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
  		col = snprintf(line_buf, scr_width,
  				"\n" "%5u%6u %-8.8s %s%s" FMT
  				IF_FEATURE_TOP_SMP_PROCESS(" %3d")
-@@ -1109,7 +1109,7 @@ int top_main(int argc UNUSED_PARAM, char
+@@ -1212,7 +1212,7 @@ int top_main(int argc UNUSED_PARAM, char
  				top = xrealloc_vector(top, 6, ntop++);
  				top[n].pid = p->pid;
  				top[n].ppid = p->ppid;

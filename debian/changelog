@@ -1,3 +1,11 @@
+busybox-power (1.21.0power1) unstable; urgency=low
+
+  * New upstream release (BusyBox 1.21.0)
+  * Correct the symlink locations of several applets
+  * Generate busybox-power-althist package
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Tue, 22 Jan 2013 12:45:45 +0100
+
 busybox-power (1.20.2power5+thumb0) unstable; urgency=low
 
   * Merged master
