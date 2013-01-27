@@ -1,8 +1,5 @@
 Make the showkey's "-a" option default instead of "-k"
 
-By Dennis Groenen <tj.groenen@gmail.com> - 2011-08-19
----
-
 --- a/console-tools/showkey.c
 +++ b/console-tools/showkey.c
 @@ -11,8 +11,8 @@

@@ -1,6 +1,16 @@
+Note: Upstream debian has identified this patch to be incorrect[1] and will
+remove it in Debian Jessie (8.0).
+
+We are not affected by this behavior since we have FEATURE_PREFER_APPLETS=n
+and CONFIG_FEATURE_SH_STANDALONE=n. Also see doc/nofork_noexec.txt in BusyBox'
+source. To prevent random breakage (Nokia ships this patch in their trees as
+well), we will keep carrying this patch, at least in the foreseeable future.
+
+[1] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=679377#36
+
 --- a/shell/ash.c
 +++ b/shell/ash.c
-@@ -1904,7 +1904,7 @@ static const struct {
+@@ -1909,7 +1909,7 @@ static const struct {
  	{ VSTRFIXED|VTEXTFIXED|VUNSET, "MAIL"      , changemail      },
  	{ VSTRFIXED|VTEXTFIXED|VUNSET, "MAILPATH"  , changemail      },
  #endif
