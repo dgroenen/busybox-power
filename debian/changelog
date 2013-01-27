@@ -1,3 +1,9 @@
+busybox-power (1.21.0power1+thumb0) unstable; urgency=low
+
+  * Merged master
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sun, 27 Jan 2013 13:38:11 +0100
+
 busybox-power (1.21.0power1) unstable; urgency=low
 
   * New upstream release (BusyBox 1.21.0)
