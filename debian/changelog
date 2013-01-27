@@ -1,3 +1,10 @@
+busybox-power (1.21.0power1+diablo0) unstable; urgency=low
+
+  * Move Diablo bits from master to a new diablo branch
+  * Fix build failure on Diablo (revert upstream commit 3c62bba)
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sat, 26 Jan 2013 12:00:25 +0100
+
 busybox-power (1.21.0power1) unstable; urgency=low
 
   * New upstream release (BusyBox 1.21.0)
