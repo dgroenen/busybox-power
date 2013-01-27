@@ -40,7 +40,8 @@ $(STAMPS_DIR)/source:
 	cd $(DIR); QUILT_PATCHES=$(CURDIR)/debian/patches quilt --quiltrc /dev/null push -a || test $$? = 2
 	touch $@
 
-setup: $(STAMPS_DIR)/setup_busybox $(STAMPS_DIR)/setup_busybox-althist
+#setup: $(STAMPS_DIR)/setup_busybox $(STAMPS_DIR)/setup_busybox-althist
+setup: $(STAMPS_DIR)/setup_busybox
 
 $(STAMPS_DIR)/setup_%: SOURCE_DIR=$(BUILD_DIR)/source
 $(STAMPS_DIR)/setup_%: DIR=$(BUILD_DIR)/build_$*
@@ -54,7 +55,8 @@ $(STAMPS_DIR)/setup_%: $(STAMPS_DIR)/source
 	make -C '$(DIR)' oldconfig
 	touch $@
 
-build: $(STAMPS_DIR)/build_busybox $(STAMPS_DIR)/build_busybox-althist
+#build: $(STAMPS_DIR)/build_busybox $(STAMPS_DIR)/build_busybox-althist
+build: $(STAMPS_DIR)/build_busybox
 
 $(STAMPS_DIR)/build_%: DIR=$(BUILD_DIR)/build_$*
 $(STAMPS_DIR)/build_%: $(STAMPS_DIR)/setup_%
@@ -78,7 +80,8 @@ clean:
 
 binary-indep:
 
-binary-arch: binary-arch_busybox binary-arch_busybox-noaegis binary-arch_busybox-althist binary-arch_all
+#binary-arch: binary-arch_busybox binary-arch_busybox-noaegis binary-arch_busybox-althist binary-arch_all
+binary-arch: binary-arch_busybox binary-arch_busybox-noaegis binary-arch_all
 
 binary-arch_busybox: DIR = $(BUILD_DIR)/build_busybox
 binary-arch_busybox: DH_OPTIONS = -pbusybox-power

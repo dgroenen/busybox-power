@@ -207,7 +207,7 @@ XB-Maemo-Icon-26:
  5l7y6xMAAAAASUVORK5CYII=
 
 Package: busybox-power-althist
-Architecture: any
+Architecture: none
 Depends: ${shlibs:Depends}
 Provides: busybox-power
 Conflicts: busybox-power
