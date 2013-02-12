@@ -13,7 +13,7 @@
 
 INSTALLDIR="/opt/busybox-power"
 EXECPWR="$INSTALLDIR/busybox.power"
-DISTBIN="/bin/busybox.distrib"
+DISTBIN="$INSTALLDIR/busybox.distrib"
 
 VERBOSE="0"
 MODIFIEDBIN="0"
