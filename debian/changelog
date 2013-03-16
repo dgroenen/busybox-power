@@ -1,3 +1,10 @@
+busybox-power (1.21.0power2) unstable; urgency=low
+
+  * Apply BusyBox 1.21.0 hotfixes
+  * Divert busybox binary to /opt/busybox-power
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sat, 16 Mar 2013 11:41:43 +0100
+
 busybox-power (1.21.0power1+diablo0) unstable; urgency=low
 
   * Move Diablo bits from master to a new diablo branch
