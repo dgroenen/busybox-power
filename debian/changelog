@@ -1,3 +1,9 @@
+busybox-power (1.21.0power2+diablo0) unstable; urgency=low
+
+  * Merged master
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sat, 16 Mar 2013 13:03:18 +0100
+
 busybox-power (1.21.0power2) unstable; urgency=low
 
   * Apply BusyBox 1.21.0 hotfixes
