@@ -22,6 +22,7 @@ ps-accept-and-ignore-missing-options.patch
 showkey-default-option.patch
 0001-pgrep-check-whether-we-re-pkill-at-runtime.patch
 0002-ash-install-SIGHUP-signal-handler-when-interactive.patch
+0001-swapon-adhere-swap-priority-in-fstab.patch
 
 # Hotfixes
 
