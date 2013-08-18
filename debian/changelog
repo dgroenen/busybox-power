@@ -1,3 +1,10 @@
+busybox-power (1.21.1power1) unstable; urgency=low
+
+  * New upstream release (BusyBox 1.21.1)
+  * swapon: support "pri=NNN" in fstab
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Sun, 18 Aug 2013 11:26:49 +0200
+
 busybox-power (1.21.0power2+thumb0) unstable; urgency=low
 
   * Merged master
