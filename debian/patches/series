@@ -22,7 +22,6 @@ ps-accept-and-ignore-missing-options.patch
 showkey-default-option.patch
 0001-pgrep-check-whether-we-re-pkill-at-runtime.patch
 0002-ash-install-SIGHUP-signal-handler-when-interactive.patch
-0001-swapon-adhere-swap-priority-in-fstab.patch
 
 # Hotfixes
 
@@ -32,5 +31,6 @@ showkey-default-option.patch
 #ls_color_red.patch
 
 # Patched pulled from busybox git
+0001-swapon-support-pri-NNN-in-fstab.patch
 
 # Miscellaneous

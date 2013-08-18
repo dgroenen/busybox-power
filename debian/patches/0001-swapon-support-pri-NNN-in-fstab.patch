@@ -1,0 +1,42 @@
+From 8c7fcbd7521c1bafcf6e792af8b140c256e2cbfd Mon Sep 17 00:00:00 2001
+From: Tito Ragusa <farmatito@tiscali.it>
+Date: Thu, 8 Aug 2013 10:21:27 +0200
+Subject: [PATCH] swapon: support "pri=NNN" in fstab
+
+function                                             old     new   delta
+swap_on_off_main                                     244     365    +121
+
+Signed-off-by: Tito Ragusa <farmatito@tiscali.it>
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+---
+ util-linux/swaponoff.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/util-linux/swaponoff.c b/util-linux/swaponoff.c
+index 54867ec..afad4ab 100644
+--- a/util-linux/swaponoff.c
++++ b/util-linux/swaponoff.c
+@@ -95,6 +95,20 @@ static int do_em_all(void)
+ 			if (applet_name[5] != 'n'
+ 			 || hasmntopt(m, MNTOPT_NOAUTO) == NULL
+ 			) {
++#if ENABLE_FEATURE_SWAPON_PRI
++				char *p;
++				g_flags = 0; /* each swap space might have different flags */
++				p = strstr(m->mnt_opts, "pri=");
++				if (p) {
++					/* Max allowed 32767 (==SWAP_FLAG_PRIO_MASK) */
++					int swap_prio = MIN(bb_strtoull(p + 4 , NULL, 10), SWAP_FLAG_PRIO_MASK);
++					/* We want to allow "NNNN,foo", thus errno == EINVAL is allowed too */
++					if (errno != ERANGE) {
++						g_flags = SWAP_FLAG_PREFER |
++							(swap_prio << SWAP_FLAG_PRIO_SHIFT);
++					}
++				}
++#endif
+ 				err += swap_enable_disable(m->mnt_fsname);
+ 			}
+ 		}
+-- 
+1.7.9.5
+
