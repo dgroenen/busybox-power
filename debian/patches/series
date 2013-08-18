@@ -20,6 +20,6 @@ showkey-default-option.patch
 #ls_color_red.patch
 
 # Patched pulled from busybox git
+0001-swapon-support-pri-NNN-in-fstab.patch
 
 # Miscellaneous
-
