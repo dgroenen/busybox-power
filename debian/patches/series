@@ -17,6 +17,7 @@ cssu/busybox-portrait.patch
 supress-bad-number.patch
 parse-complete-hostname.patch
 ps-accept-and-ignore-missing-options.patch
+0001-Revert-run-parts-stop-providing-incompatible-short-o.patch
 
 # New patches as per reported issues by users
 showkey-default-option.patch
@@ -31,6 +32,5 @@ showkey-default-option.patch
 #ls_color_red.patch
 
 # Patched pulled from busybox git
-0001-swapon-support-pri-NNN-in-fstab.patch
 
 # Miscellaneous
