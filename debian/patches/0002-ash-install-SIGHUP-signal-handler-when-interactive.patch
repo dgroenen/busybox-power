@@ -1,19 +1,19 @@
-From c96672c9c603498d7c4775b2a372cbe9b0ba6dbf Mon Sep 17 00:00:00 2001
+From 959421a4cf10dbe9685fe36f337b9d2428dd4b06 Mon Sep 17 00:00:00 2001
 From: Dennis Groenen <tj.groenen@gmail.com>
-Date: Sat, 22 Sep 2012 11:38:11 +0200
+Date: Fri, 3 Jan 2014 15:30:00 +0100
 Subject: [PATCH 2/2] ash: install SIGHUP signal handler when interactive
 
 ---
- include/libbb.h   |  2 ++
- procps/Kbuild.src |  1 +
- shell/ash.c       | 23 +++++++++++++++++++++++
+ include/libbb.h   |    2 ++
+ procps/Kbuild.src |    1 +
+ shell/ash.c       |   23 +++++++++++++++++++++++
  3 files changed, 26 insertions(+)
 
 diff --git a/include/libbb.h b/include/libbb.h
-index 2cc1466..8694d52 100644
+index 64167bb..acbc1bf 100644
 --- a/include/libbb.h
 +++ b/include/libbb.h
-@@ -1097,6 +1097,8 @@ int kill_main(int argc, char **argv) IF_KILL(MAIN_EXTERNALLY_VISIBLE);
+@@ -1112,6 +1112,8 @@ int kill_main(int argc, char **argv) IF_KILL(MAIN_EXTERNALLY_VISIBLE);
  int chown_main(int argc, char **argv) IF_CHOWN(MAIN_EXTERNALLY_VISIBLE);
  /* Used by ftpd */
  int ls_main(int argc, char **argv) IF_LS(MAIN_EXTERNALLY_VISIBLE);
@@ -35,10 +35,10 @@ index 89b1cc0..0718d32 100644
  lib-$(CONFIG_PKILL)	+= pgrep.o
  lib-$(CONFIG_PIDOF)	+= pidof.o
 diff --git a/shell/ash.c b/shell/ash.c
-index d025da4..5885b04 100644
+index 71ef9a6..6cedfbe 100644
 --- a/shell/ash.c
 +++ b/shell/ash.c
-@@ -3378,6 +3378,26 @@ static void setjobctl(int);
+@@ -3365,6 +3365,26 @@ static void setjobctl(int);
  #endif
  
  /*
@@ -65,16 +65,16 @@ index d025da4..5885b04 100644
   * Ignore a signal.
   */
  static void
-@@ -13160,6 +13180,9 @@ int ash_main(int argc UNUSED_PARAM, char **argv)
+@@ -13219,6 +13239,9 @@ int ash_main(int argc UNUSED_PARAM, char **argv)
  	setstackmark(&smark);
  	procargs(argv);
  
 +	if (iflag)
 +		signal(SIGHUP, signal_pgrp_exit);
 +
- #if ENABLE_FEATURE_EDITING_SAVEHISTORY
- 	if (iflag) {
- 		const char *hp = lookupvar("HISTFILE");
+ 	if (argv[0] && argv[0][0] == '-')
+ 		isloginsh = 1;
+ 	if (isloginsh) {
 -- 
-1.7.12
+1.7.9.5
 

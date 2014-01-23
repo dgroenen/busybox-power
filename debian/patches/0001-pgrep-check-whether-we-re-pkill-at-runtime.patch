@@ -1,17 +1,17 @@
-From aa7f6b1162807f867524ec38a56a32107b493ed7 Mon Sep 17 00:00:00 2001
+From be11c8cf207823017342fcb5b86013a30d1ff5be Mon Sep 17 00:00:00 2001
 From: Dennis Groenen <tj.groenen@gmail.com>
-Date: Sat, 22 Sep 2012 11:22:11 +0200
+Date: Fri, 3 Jan 2014 15:23:39 +0100
 Subject: [PATCH 1/2] pgrep: check whether we're pkill at runtime
 
 If we want to call pgrep_main() from other applets, pkill or pgrep will be left
 undefined. Check whether we're called as pkill or pgrep at runtime instead of
 using the preprocessor.
 ---
- procps/pgrep.c | 15 +++++++++------
+ procps/pgrep.c |   15 +++++++++------
  1 file changed, 9 insertions(+), 6 deletions(-)
 
 diff --git a/procps/pgrep.c b/procps/pgrep.c
-index dc7ffff..2d5b221 100644
+index 1c7c7c4..6f2cb5f 100644
 --- a/procps/pgrep.c
 +++ b/procps/pgrep.c
 @@ -36,9 +36,8 @@
@@ -35,9 +35,9 @@ index dc7ffff..2d5b221 100644
 +		kill(pid, signo);
 +	} else {
  		if (option_mask32 & (1 << OPTBIT_L)) /* OPT_LIST */
- 			printf("%d %s\n", pid, cmd);
+ 			printf("%u %s\n", pid, cmd);
  		else
- 			printf("%d\n", pid);
+ 			printf("%u\n", pid);
 -	} else
 -		kill(pid, signo);
 +	}
@@ -55,5 +55,5 @@ index dc7ffff..2d5b221 100644
  	signo = SIGTERM;
  	if (pkill && argv[1] && argv[1][0] == '-') {
 -- 
-1.7.12
+1.7.9.5
 
