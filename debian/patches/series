@@ -25,6 +25,9 @@ showkey-default-option.patch
 0002-ash-install-SIGHUP-signal-handler-when-interactive.patch
 
 # Hotfixes
+hotfixes/busybox-1.22.1-ash.patch
+hotfixes/busybox-1.22.1-date.patch
+hotfixes/busybox-1.22.1-iplink.patch
 
 # Dark blue on black is nearly impossible to read, use red.
 # Leaving this commented out as dark blue on white is fine, and there isn't any

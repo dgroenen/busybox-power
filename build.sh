@@ -2,7 +2,7 @@
 # Helper script to build busybox-power
 # Please run me from within Scratchbox
 
-BBVERSION="1.22.0"
+BBVERSION="1.22.1"
 MAKETHREADS=`grep -i 'processor.:' /proc/cpuinfo |wc -l`
 if [ -z "$MAKETHREADS" -o "$MAKETHREADS" -eq 0 ] ; then MAKETHREADS=1; fi
 SCRIPTDIR=`dirname $(readlink -f $0)`
