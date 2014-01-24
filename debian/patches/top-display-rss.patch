@@ -56,14 +56,14 @@ Original patch by Alexander Shishkin <ext-alexander.shishkin@nokia.com>
 +		if (s->rss >= 100000)
 +			sprintf(vsz_str_buf, "%6ldm", s->rss/1024);
  		else
--			sprintf(vsz_str_buf, "%7ld", s->vsz);
+-			sprintf(vsz_str_buf, "%7lu", s->vsz);
 -		/* PID PPID USER STAT VSZ %VSZ [%CPU] COMMAND */
-+			sprintf(vsz_str_buf, "%7ld", s->rss);
-+		/* PID PPID USER STAT RSS %MEM %CPU COMMAND */
++			sprintf(vsz_str_buf, "%7lu", s->rss);
++		/* PID PPID USER STAT RSS %MEM [%CPU] COMMAND */
  		col = snprintf(line_buf, scr_width,
  				"\n" "%5u%6u %-8.8s %s%s" FMT
  				IF_FEATURE_TOP_SMP_PROCESS(" %3d")
-@@ -1212,7 +1212,7 @@ int top_main(int argc UNUSED_PARAM, char
+@@ -1211,7 +1211,7 @@ int top_main(int argc UNUSED_PARAM, char
  				top = xrealloc_vector(top, 6, ntop++);
  				top[n].pid = p->pid;
  				top[n].ppid = p->ppid;
