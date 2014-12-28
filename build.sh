@@ -2,7 +2,7 @@
 # Helper script to build busybox-power
 # Please run me from within Scratchbox
 
-BBVERSION="1.22.1"
+BBVERSION="1.23.0"
 MAKETHREADS=`grep -i 'processor.:' /proc/cpuinfo |wc -l`
 if [ -z "$MAKETHREADS" -o "$MAKETHREADS" -eq 0 ] ; then MAKETHREADS=1; fi
 SCRIPTDIR=`dirname $(readlink -f $0)`
@@ -10,9 +10,9 @@ BUILDDIR="$SCRIPTDIR/../busybox-power-build"
 
 BUILD_OPTIONS="parallel=$MAKETHREADS"
 
-hash wget 2>&- || { 
+hash wget 2>&- || {
   echo >&2 "this script requires wget, exiting now"
-  exit 1 
+  exit 1
 }
 
 mkdir -p $BUILDDIR
