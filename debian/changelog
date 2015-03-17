@@ -1,3 +1,9 @@
+busybox-power (1.23.1power2) unstable; urgency=low
+
+  * Re-upload to the autobuilder, no code changes
+
+ -- Dennis Groenen <tj.groenen@gmail.com>  Tue, 17 Mar 2015 18:36:32 +0100
+
 busybox-power (1.23.1power1) unstable; urgency=low
 
   * New upstream release (BusyBox 1.23.1)
